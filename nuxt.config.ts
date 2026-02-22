@@ -2,6 +2,15 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-02-16',
   devtools: { enabled: true },
   srcDir: 'app',
+  devServer: {
+    host: '127.0.0.1',
+    port: 80
+  },
+  vite: {
+    server: {
+      allowedHosts: ['zohanafttcrm.com', 'dev.zohanafttcrm.com', '.zohanafttcrm.com'],
+    }
+  },
   app: {
     head: {
       link: [
