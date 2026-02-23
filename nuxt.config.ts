@@ -6,6 +6,11 @@ export default defineNuxtConfig({
     host: '127.0.0.1',
     port: 3000
   },
+  routeRules: {
+    '/site.webmanifest': {
+      headers: { 'Content-Type': 'application/manifest+json' },
+    },
+  },
   vite: {
     server: {
       allowedHosts: ['zohanafttcrm.com', 'dev.zohanafttcrm.com', '.zohanafttcrm.com'],
