@@ -24,6 +24,7 @@ export default defineNuxtConfig({
         },
         {
           rel: 'manifest',
+          type: 'application/manifest+json',
           href: '/site.webmanifest',
         },
       ],
