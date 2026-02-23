@@ -19,6 +19,9 @@ export default defineNuxtConfig({
   css: [
     '~/assets/css/main.css',
   ],
+  runtimeConfig: {
+    TELEGRAM_TOKEN: process.env.TG_AUTH_BOT_TOKEN,
+  },
   app: {
     head: {
       link: [
@@ -35,12 +38,7 @@ export default defineNuxtConfig({
       ],
     },
   },
-  modules: [
-    '@nuxt/ui',
-    '@pinia/nuxt',
-    '@nuxtjs/i18n',
-    '@vueuse/nuxt',
-  ],
+  modules: ['@nuxt/ui', '@pinia/nuxt', '@nuxtjs/i18n', '@vueuse/nuxt'],
   i18n: {
     locales: [
       {
