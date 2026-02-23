@@ -4,13 +4,16 @@ export default defineNuxtConfig({
   srcDir: 'app',
   devServer: {
     host: '127.0.0.1',
-    port: 80
+    port: 3000
   },
   vite: {
     server: {
       allowedHosts: ['zohanafttcrm.com', 'dev.zohanafttcrm.com', '.zohanafttcrm.com'],
     }
   },
+  css: [
+    '~/assets/css/main.css',
+  ],
   app: {
     head: {
       link: [

@@ -1,4 +1,14 @@
 {
   "welcome": "Добро пожаловать",
-  "description": "CRM Telegram приложение"
+  "description": "CRM Telegram приложение",
+  "login": {
+    "title": "Вход",
+    "email": "Email",
+    "emailPlaceholder": "Введите email",
+    "password": "Пароль",
+    "passwordPlaceholder": "Введите пароль",
+    "submit": "Войти",
+    "orContinueWith": "или продолжить с",
+    "loadingTelegram": "Загрузка..."
+  }
 }
