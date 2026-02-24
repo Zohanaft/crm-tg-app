@@ -14,10 +14,6 @@ export default defineNuxtConfig({
   vite: {
     server: {
       allowedHosts: ['zohanafttcrm.com', 'dev.zohanafttcrm.com', '.zohanafttcrm.com'],
-      watch: process.env.DOCKER ? { usePolling: true } : undefined,
-      hmr: process.env.DOCKER
-        ? { host: 'localhost', port: 3000, protocol: 'ws' }
-        : true,
     },
   },
   css: [
