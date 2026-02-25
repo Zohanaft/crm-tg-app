@@ -18,12 +18,24 @@ const state = reactive<LoginFormState>({
 const toast = useToast()
 
 async function onSubmit(event: FormSubmitEvent<LoginFormState>) {
-  // TODO: интеграция с бэкендом
-  toast.add({
-    title: 'Success',
-    description: `Logged in as ${event.data.email}`,
-    color: 'success'
-  })
+  try {
+    // TODO: интеграция с бэкендом
+    toast.add({
+      title: 'Success',
+      description: `Logged in as ${event.data.email}`,
+      color: 'success'
+    })
+  } catch (e: unknown) {
+    const statusCode = (e as { data?: { statusCode?: number }; statusCode?: number })?.data?.statusCode
+      ?? (e as { statusCode?: number })?.statusCode
+    if (statusCode === 500) {
+      toast.add({
+        title: 'Ошибка',
+        description: $t('login.serviceUnavailable'),
+        color: 'error'
+      })
+    }
+  }
 }
 
 const onTelegramAuth = (user: ITelegramAuthUser) => {

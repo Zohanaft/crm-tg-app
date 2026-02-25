@@ -19,9 +19,7 @@ export default defineNuxtConfig({
   css: [
     '~/assets/css/main.css',
   ],
-  runtimeConfig: {
-    TELEGRAM_TOKEN: process.env.TG_AUTH_BOT_TOKEN,
-  },
+  runtimeConfig: {},
   app: {
     head: {
       link: [

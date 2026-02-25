@@ -3,6 +3,8 @@ import type { ITelegramSession, IUserSession } from '~/types/telegram-session'
 
 export const useSessionState = () => useState<ITelegramSession | Partial<ITelegramSession>>('telegram-session', () => ({}))
 
+let fetchSessionPromise: Promise<void> | null = null
+
 export function useUserSession(): IUserSession {
   fetchSession()
   const session = useSessionState()
@@ -10,12 +12,20 @@ export function useUserSession(): IUserSession {
 }
 
 export const clearSession = async () => {
+  fetchSessionPromise = null
   await $fetch('/api/telegram/session', { method: 'DELETE' })
   useSessionState().value = { loggedIn: false }
 }
 
 export const fetchSession = async () => {
+  if (fetchSessionPromise) return fetchSessionPromise
   const sessionState = useSessionState()
-  const data = await $fetch<ITelegramSession>('/api/telegram/session')
-  sessionState.value = data ?? {}
+  fetchSessionPromise = $fetch<ITelegramSession>('/api/telegram/session')
+    .then((data) => {
+      sessionState.value = data ?? {}
+    })
+    .finally(() => {
+      fetchSessionPromise = null
+    })
+  return fetchSessionPromise
 }

@@ -9,6 +9,7 @@
     "passwordPlaceholder": "Enter your password",
     "submit": "Sign in",
     "orContinueWith": "or continue with",
-    "loadingTelegram": "Loading..."
+    "loadingTelegram": "Loading...",
+    "serviceUnavailable": "Service is temporarily unavailable, please try again later or contact support."
   }
 }

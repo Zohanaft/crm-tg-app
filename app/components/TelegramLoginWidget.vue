@@ -46,9 +46,38 @@ function setCookie(payload: ITelegramAuthUser) {
   )
 }
 
-function onTelegramAuth(payload: ITelegramAuthUser) {
+const toast = useToast()
+const { t } = useI18n()
+
+async function onTelegramAuth(payload: ITelegramAuthUser) {
   setCookie(payload)
-  fetchSession()
+  try {
+    await $fetch('/api/login', {
+      method: 'POST',
+      body: {
+        id: payload.id,
+        first_name: payload.first_name,
+        last_name: payload.last_name,
+        username: payload.username,
+        photo_url: payload.photo_url,
+        auth_date: payload.auth_date,
+        hash: payload.hash
+      },
+      credentials: 'include'
+    })
+    await fetchSession()
+  } catch (e: unknown) {
+    const err = e as { data?: { statusCode?: number }; statusCode?: number; response?: { status?: number } }
+    const statusCode = err?.data?.statusCode ?? err?.statusCode ?? err?.response?.status
+    if (statusCode === 500) {
+      toast.add({
+        title: 'Ошибка',
+        description: t('login.serviceUnavailable'),
+        color: 'error'
+      })
+    }
+    console.error('Login failed:', e)
+  }
   emit('callback', payload)
 }
 
