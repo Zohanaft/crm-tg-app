@@ -1,16 +1,32 @@
 import type { IUser } from '~/stores/user'
+import { apiFetch, getApiUrl, getRequestHeaders } from '~/composables/useApiFetch'
 
 export default defineNuxtRouteMiddleware(async () => {
   const userStore = useUserStore()
   if (userStore.loggedIn) return
+
+  const headers = getRequestHeaders()
+  let profile: IUser | null = null
+
   try {
-    const profile = await useApiFetch<IUser>('/api/profile')
-    if (profile) {
-      userStore.setUser(profile)
-      return
-    }
+    profile = await apiFetch<IUser>(getApiUrl('/profile'), { headers })
+    if (profile) userStore.setUser(profile)
   } catch {
-    // useApiFetch уже вызвал clearSession и navigateTo('/login') при 401 после refresh
+    profile = null
   }
-  return navigateTo('/login')
+
+  if (!profile) {
+    console.log('[auth middleware] no profile, clearing session and redirecting to /login')
+    userStore.clearUser()
+    try {
+      await apiFetch(getApiUrl('/logout'), {
+        method: 'POST',
+        headers,
+        public: true,
+      })
+    } catch {
+      // cookies могут быть уже очищены
+    }
+    return navigateTo('/login')
+  }
 })

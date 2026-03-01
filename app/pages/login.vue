@@ -61,6 +61,17 @@ const onTelegramAuth = (_user: ITelegramAuthUser) => {
 }
 
 const TELEGRAM_BOT = ref<string>('T_CRMAuth_bot')
+const TG_BOT_ID = ref<number>(8093778475);
+
+const login = () => {
+  const botId = TG_BOT_ID.value
+  const redirectUrl = encodeURIComponent(window.location.origin + '/auth/telegram')
+
+  console.log('redirectUrl', redirectUrl);
+
+  window.location.href =
+    `https://oauth.telegram.org/auth?bot_id=${botId}&origin=${window.location.origin}&return_to=${redirectUrl}`
+}
 
 </script>
 
@@ -101,14 +112,7 @@ const TELEGRAM_BOT = ref<string>('T_CRMAuth_bot')
 
       <USeparator :label="$t('login.orContinueWith')" class="my-6" />
 
-      <ClientOnly>
-        <TelegramLoginWidget size="large" radius="30" :telegram-login="TELEGRAM_BOT" mode="redirect" />
-        <template #fallback>
-          <div class="min-h-[44px] flex items-center justify-center text-muted-foreground">
-            {{ $t('login.loadingTelegram') }}
-          </div>
-        </template>
-      </ClientOnly>
+      <UButton type="submit" block size="lg" @click="login"> Войти через Telegram </UButton>
     </UCard>
   </div>
 </template>
