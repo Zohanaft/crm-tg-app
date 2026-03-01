@@ -1,15 +1,1 @@
-{
-  "welcome": "Welcome",
-  "description": "CRM Telegram App",
-  "login": {
-    "title": "Sign in",
-    "email": "Email",
-    "emailPlaceholder": "Enter your email",
-    "password": "Password",
-    "passwordPlaceholder": "Enter your password",
-    "submit": "Sign in",
-    "orContinueWith": "or continue with",
-    "loadingTelegram": "Loading...",
-    "serviceUnavailable": "Service is temporarily unavailable, please try again later or contact support."
-  }
-}
+{"welcome":"Welcome","description":"CRM Telegram App","dashboard":{"title":"Dashboard","welcome":"Welcome"},"login":{"title":"Sign in","email":"Email","emailPlaceholder":"Enter your email","password":"Password","passwordPlaceholder":"Enter your password","submit":"Sign in","orContinueWith":"or continue with","loadingTelegram":"Loading...","serviceUnavailable":"Service is temporarily unavailable, please try again later or contact support."}}

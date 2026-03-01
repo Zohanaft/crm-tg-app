@@ -38,16 +38,26 @@ async function onSubmit(event: FormSubmitEvent<LoginFormState>) {
   }
 }
 
-const onTelegramAuth = (user: ITelegramAuthUser) => {
-  console.log('Telegram auth:', user);
-  const displayName = [user.first_name, user.last_name].filter(Boolean).join(' ')
-  const details = user.username ? `@${user.username}` : `ID: ${user.id}`
+const userStore = useUserStore()
+
+const onTelegramAuth = (_user: ITelegramAuthUser) => {
+  console.log('payload', _user)
+  if (userStore.user) {
+    toast.add({
+      title: 'Telegram Auth',
+      description: $t('login.success', 'Вы успешно вошли'),
+      color: 'success'
+    })
+    navigateTo('/dashboard')
+    return
+  }
+  const displayName = [_user.first_name, _user.last_name].filter(Boolean).join(' ')
+  const details = _user.username ? `@${_user.username}` : `ID: ${_user.id}`
   toast.add({
     title: 'Telegram Auth',
     description: `Logged in as ${displayName} (${details})`,
     color: 'success'
   })
-  // TODO: проверка hash и отправка на бэкенд
 }
 
 const TELEGRAM_BOT = ref<string>('T_CRMAuth_bot')
@@ -92,7 +102,7 @@ const TELEGRAM_BOT = ref<string>('T_CRMAuth_bot')
       <USeparator :label="$t('login.orContinueWith')" class="my-6" />
 
       <ClientOnly>
-        <TelegramLoginWidget size="large" radius="30" :telegram-login="TELEGRAM_BOT" @callback="onTelegramAuth" />
+        <TelegramLoginWidget size="large" radius="30" :telegram-login="TELEGRAM_BOT" mode="redirect" />
         <template #fallback>
           <div class="min-h-[44px] flex items-center justify-center text-muted-foreground">
             {{ $t('login.loadingTelegram') }}
