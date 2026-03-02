@@ -59,7 +59,6 @@ const onTelegramAuth = (_user: ITelegramAuthUser) => {
   })
 }
 
-const TELEGRAM_BOT = ref<string>('T_CRMAuth_bot')
 const TG_BOT_ID = ref<number>(8093778475)
 
 const loginViaTelegram = () => {
