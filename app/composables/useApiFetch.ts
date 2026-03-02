@@ -2,7 +2,8 @@ import type { NitroFetchOptions, NitroFetchRequest } from 'nitropack'
 import { logout } from '~/composables/useLogout'
 
 const REFRESH_PATH = '/refresh'
-const LOGIN_PATH = '/login'
+const LOGIN_PATH = '/sign-in'
+const SIGN_UP_PATH = '/sign-up'
 const LOGOUT_PATH = '/logout'
 
 /** URL для API: на сервере — apiBase + apiPathPrefix + path, в браузере — /api + path */
@@ -44,7 +45,7 @@ function getStatus(err: unknown): number | undefined {
 
 function isPublicPath(url: string): boolean {
   const u = typeof url === 'string' ? url : ''
-  return [REFRESH_PATH, LOGIN_PATH, LOGOUT_PATH].some((p) => u.includes(p))
+  return [REFRESH_PATH, LOGIN_PATH, SIGN_UP_PATH, LOGOUT_PATH].some((p) => u.includes(p))
 }
 
 function resolveRequest(request: NitroFetchRequest): NitroFetchRequest {
@@ -83,7 +84,6 @@ export async function apiFetch<T = unknown>(
   }
 
   const urlStr = typeof url === 'string' ? url : ''
-  const isProfile = urlStr.includes('/profile')
 
   const doFetch = () => $fetch<T>(url, opts)
 
@@ -95,7 +95,7 @@ export async function apiFetch<T = unknown>(
         description: 'Войдите снова',
         color: 'warning',
       })
-      await logout()
+      await clearSession()
     }
   }
 
@@ -131,7 +131,7 @@ export async function apiFetch<T = unknown>(
       const refreshStatus = getStatus(refreshErr)
       if (refreshStatus === 401 || refreshStatus === 400) {
         await handleRefreshFailure()
-      } 
+      }
       throw refreshErr
     }
 

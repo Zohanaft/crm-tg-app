@@ -13,7 +13,7 @@ onMounted(() => {
     const url = `${window.location.origin}/api/auth/telegram?tgAuthResult=${encodeURIComponent(tgAuthResult)}`
     window.location.replace(url)
   } else {
-    navigateTo('/login')
+    navigateTo('/sign-in')
   }
 })
 </script>

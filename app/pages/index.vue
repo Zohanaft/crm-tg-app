@@ -6,10 +6,10 @@
     <p class="mb-6 text-muted-foreground">
       {{ $t('description') }}
     </p>
-    <NuxtLink to="/login" class="inline-flex items-center gap-2">
-      <UButton>
-        {{ $t('login.title') }}
-      </UButton>
-    </NuxtLink>
   </div>
 </template>
+<script setup lang="ts">
+definePageMeta({
+  middleware: ['auth-public'],
+});
+</script>

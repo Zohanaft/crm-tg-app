@@ -3,23 +3,23 @@ import * as v from 'valibot'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { ITelegramAuthUser } from '~/types/telegram-session'
 
-const loginFormSchema = v.object({
+const signInFormSchema = v.object({
   email: v.pipe(v.string(), v.email('Invalid email')),
   password: v.pipe(v.string(), v.minLength(1, 'Password is required'))
 })
 
-type LoginFormState = v.InferOutput<typeof loginFormSchema>
+type SignInFormState = v.InferOutput<typeof signInFormSchema>
 
-const state = reactive<LoginFormState>({
+const state = reactive<SignInFormState>({
   email: '',
   password: ''
 })
 
 const toast = useToast()
 
-async function onSubmit(event: FormSubmitEvent<LoginFormState>) {
+async function onSubmit(event: FormSubmitEvent<SignInFormState>) {
   try {
-    // TODO: интеграция с бэкендом
+    // TODO: интеграция с бэкендом (login)
     toast.add({
       title: 'Success',
       description: `Logged in as ${event.data.email}`,
@@ -31,7 +31,7 @@ async function onSubmit(event: FormSubmitEvent<LoginFormState>) {
     if (statusCode === 500) {
       toast.add({
         title: 'Ошибка',
-        description: $t('login.serviceUnavailable'),
+        description: $t('signIn.serviceUnavailable'),
         color: 'error'
       })
     }
@@ -41,11 +41,10 @@ async function onSubmit(event: FormSubmitEvent<LoginFormState>) {
 const userStore = useUserStore()
 
 const onTelegramAuth = (_user: ITelegramAuthUser) => {
-  console.log('payload', _user)
   if (userStore.user) {
     toast.add({
       title: 'Telegram Auth',
-      description: $t('login.success', 'Вы успешно вошли'),
+      description: $t('signIn.success', 'Вы успешно вошли'),
       color: 'success'
     })
     navigateTo('/dashboard')
@@ -61,18 +60,15 @@ const onTelegramAuth = (_user: ITelegramAuthUser) => {
 }
 
 const TELEGRAM_BOT = ref<string>('T_CRMAuth_bot')
-const TG_BOT_ID = ref<number>(8093778475);
+const TG_BOT_ID = ref<number>(8093778475)
 
-const login = () => {
+const loginViaTelegram = () => {
   const botId = TG_BOT_ID.value
   const redirectUrl = encodeURIComponent(window.location.origin + '/auth/telegram')
-
-  console.log('redirectUrl', redirectUrl);
 
   window.location.href =
     `https://oauth.telegram.org/auth?bot_id=${botId}&origin=${window.location.origin}&return_to=${redirectUrl}`
 }
-
 </script>
 
 <template>
@@ -80,39 +76,43 @@ const login = () => {
     <UCard class="w-full max-w-md">
       <template #header>
         <h2 class="text-xl font-semibold">
-          {{ $t('login.title') }}
+          {{ $t('signIn.title') }}
         </h2>
       </template>
 
-      <UForm :schema="loginFormSchema" :state="state" class="space-y-4" @submit="onSubmit">
-        <UFormField :label="$t('login.email')" name="email">
+      <UForm :schema="signInFormSchema" :state="state" class="space-y-4" @submit="onSubmit">
+        <UFormField :label="$t('signIn.email')" name="email">
           <UInput
-            class="w-full"
             v-model="state.email"
-            type="email"
-            :placeholder="$t('login.emailPlaceholder')"
-            autocomplete="email"
-          />
-        </UFormField>
-
-        <UFormField class="mb-8" :label="$t('login.password')" name="password">
-          <UInput
             class="w-full"
-            v-model="state.password"
-            type="password"
-            :placeholder="$t('login.passwordPlaceholder')"
-            autocomplete="current-password"
+            type="email"
+            :placeholder="$t('signIn.emailPlaceholder')"
+            autocomplete="email"
+            disabled
           />
         </UFormField>
 
-        <UButton type="submit" block size="lg">
-          {{ $t('login.submit') }}
+        <UFormField class="mb-8" :label="$t('signIn.password')" name="password">
+          <UInput
+            v-model="state.password"
+            class="w-full"
+            type="password"
+            :placeholder="$t('signIn.passwordPlaceholder')"
+            autocomplete="current-password"
+            disabled
+          />
+        </UFormField>
+
+        <UButton type="submit" block size="lg" disabled>
+          {{ $t('signIn.submit') }}
         </UButton>
       </UForm>
 
-      <USeparator :label="$t('login.orContinueWith')" class="my-6" />
+      <USeparator :label="$t('signIn.orContinueWith')" class="my-6" />
 
-      <UButton type="submit" block size="lg" @click="login"> Войти через Telegram </UButton>
+      <UButton block size="lg" @click="loginViaTelegram">
+        {{ $t('signIn.telegram') }}
+      </UButton>
     </UCard>
   </div>
 </template>

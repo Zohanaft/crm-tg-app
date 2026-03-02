@@ -11,7 +11,7 @@ async function performLogout(options?: { redirect?: boolean }) {
   }
   if (options?.redirect !== false) {
     const router = useRouter()
-    await router.replace('/login')
+    await router.replace('/sign-in')
   }
 }
 

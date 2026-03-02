@@ -1,1 +1,35 @@
-{"welcome":"Welcome","description":"CRM Telegram App","dashboard":{"title":"Dashboard","welcome":"Welcome"},"login":{"title":"Sign in","email":"Email","emailPlaceholder":"Enter your email","password":"Password","passwordPlaceholder":"Enter your password","submit":"Sign in","orContinueWith":"or continue with","loadingTelegram":"Loading...","serviceUnavailable":"Service is temporarily unavailable, please try again later or contact support."}}
+{
+  "welcome": "Welcome",
+  "description": "CRM Telegram App",
+  "dashboard": { "title": "Dashboard", "welcome": "Welcome" },
+  "nav": {
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "profile": "Profile",
+    "logout": "Log out"
+  },
+  "profile": {
+    "title": "Profile"
+  },
+  "signIn": {
+    "title": "Sign in",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "submit": "Sign in",
+    "orContinueWith": "or continue with",
+    "telegram": "Continue with Telegram",
+    "loadingTelegram": "Loading...",
+    "serviceUnavailable": "Service is temporarily unavailable, please try again later or contact support."
+  },
+  "signUp": {
+    "title": "Sign up",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "submit": "Sign up",
+    "serviceUnavailable": "Service is temporarily unavailable, please try again later or contact support."
+  }
+}

@@ -1,1 +1,35 @@
-{"welcome":"Добро пожаловать","description":"CRM Telegram приложен","dashboard":{"title":"Панель управления","welcome":"Добро пожаловать"},"login":{"title":"Вход","email":"Email","emailPlaceholder":"Введите email","password":"Пароль","passwordPlaceholder":"Введите пароль","submit":"Войти","orContinueWith":"или продолжить с","loadingTelegram":"Загрузка...","serviceUnavailable":"Сервис временно недоступен, попробуйте позже или обратитесь в службу поддержки."}}
+{
+  "welcome": "Добро пожаловать",
+  "description": "CRM Telegram приложение",
+  "dashboard": { "title": "Панель управления", "welcome": "Добро пожаловать" },
+  "nav": {
+    "signIn": "Войти",
+    "signUp": "Регистрация",
+    "profile": "Профиль",
+    "logout": "Выйти"
+  },
+  "profile": {
+    "title": "Профиль"
+  },
+  "signIn": {
+    "title": "Вход",
+    "email": "Email",
+    "emailPlaceholder": "Введите email",
+    "password": "Пароль",
+    "passwordPlaceholder": "Введите пароль",
+    "submit": "Войти",
+    "orContinueWith": "или продолжить с",
+    "telegram": "Войти через Telegram",
+    "loadingTelegram": "Загрузка...",
+    "serviceUnavailable": "Сервис временно недоступен, попробуйте позже или обратитесь в службу поддержки."
+  },
+  "signUp": {
+    "title": "Регистрация",
+    "email": "Email",
+    "emailPlaceholder": "Введите email",
+    "password": "Пароль",
+    "passwordPlaceholder": "Введите пароль",
+    "submit": "Зарегистрироваться",
+    "serviceUnavailable": "Сервис временно недоступен, попробуйте позже или обратитесь в службу поддержки."
+  }
+}
