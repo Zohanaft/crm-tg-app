@@ -67,6 +67,7 @@ const loginViaTelegram = () => {
 
   window.location.href =
     `https://oauth.telegram.org/auth?bot_id=${botId}&origin=${window.location.origin}&return_to=${redirectUrl}`
+
 }
 </script>
 

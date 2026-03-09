@@ -1,7 +1,26 @@
 {
   "welcome": "Добро пожаловать",
   "description": "CRM Telegram приложение",
-  "dashboard": { "title": "Панель управления", "welcome": "Добро пожаловать" },
+  "dashboard": {
+    "title": "Панель управления",
+    "welcome": "Добро пожаловать",
+    "connectBot": "Подключить бота",
+    "botsList": "Ваши боты",
+    "botsEmpty": "Пока нет ботов",
+    "botsError": "Не удалось загрузить ботов",
+    "botsLoading": "Загрузка..."
+  },
+  "connectBot": {
+    "title": "Подключить бота",
+    "tokenLabel": "Telegram Bot Token",
+    "tokenPlaceholder": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
+    "tokenRequired": "Введите токен бота",
+    "submit": "Подключить",
+    "successTitle": "Успешно",
+    "successDescription": "Бот подключён",
+    "errorTitle": "Ошибка",
+    "errorDescription": "Не удалось подключить бота"
+  },
   "nav": {
     "signIn": "Войти",
     "signUp": "Регистрация",

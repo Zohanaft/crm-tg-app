@@ -1,7 +1,26 @@
 {
   "welcome": "Welcome",
   "description": "CRM Telegram App",
-  "dashboard": { "title": "Dashboard", "welcome": "Welcome" },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome",
+    "connectBot": "Connect bot",
+    "botsList": "Your bots",
+    "botsEmpty": "No bots yet",
+    "botsError": "Failed to load bots",
+    "botsLoading": "Loading..."
+  },
+  "connectBot": {
+    "title": "Connect bot",
+    "tokenLabel": "Telegram Bot Token",
+    "tokenPlaceholder": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
+    "tokenRequired": "Enter the bot token",
+    "submit": "Connect",
+    "successTitle": "Success",
+    "successDescription": "Bot connected",
+    "errorTitle": "Error",
+    "errorDescription": "Failed to connect bot"
+  },
   "nav": {
     "signIn": "Sign in",
     "signUp": "Sign up",

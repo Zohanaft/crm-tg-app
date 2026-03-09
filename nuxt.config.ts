@@ -2,11 +2,17 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-02-16',
   devtools: { enabled: true },
   srcDir: 'app',
+  build: {
+    transpile: ['@nuxt/ui'],
+  },
   runtimeConfig: {
     /** Backend base URL for server-side API calls (e.g. https://zohanafttcrm.com or http://crm-tg-app-backend:3000). Leave empty when not needed. */
     apiBase: process.env.NUXT_API_BASE || '',
     /** Path prefix when apiBase is the same origin (e.g. '/api'). Set to '/api' for https://zohanafttcrm.com so nginx can proxy. Leave empty when apiBase is direct backend URL. */
     apiPathPrefix: process.env.NUXT_API_PATH_PREFIX || '',
+    public: {
+      apiPathPrefix: process.env.NUXT_API_PATH_PREFIX || '/api',
+    },
   },
   devServer: {
     host: process.env.DOCKER ? '0.0.0.0' : '127.0.0.1',
@@ -14,12 +20,15 @@ export default defineNuxtConfig({
   },
   routeRules: {
     '/site.webmanifest': {
-      headers: { 'Content-Type': 'application/manifest+json' },
+      headers: { 'Content-Type': 'application/json' },
     },
   },
   vite: {
     server: {
       allowedHosts: ['zohanafttcrm.com', 'dev.zohanafttcrm.com', '.zohanafttcrm.com'],
+    },
+    optimizeDeps: {
+      include: ['@nuxt/ui'],
     },
   },
   css: [
