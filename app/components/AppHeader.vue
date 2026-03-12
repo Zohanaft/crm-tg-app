@@ -6,9 +6,14 @@ const { logout } = useLogout()
 <template>
   <header class="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
     <div class="container mx-auto flex h-14 items-center justify-between px-4">
-      <NuxtLink to="/" class="font-semibold">
-        {{ $t('description', 'CRM Telegram App') }}
-      </NuxtLink>
+      <nav class="flex items-center gap-4">
+        <NuxtLink to="/get-started" class="text-sm hover:underline">
+          {{ $t('nav.getStarted', 'Как начать') }}
+        </NuxtLink>
+        <NuxtLink to="/news" class="text-sm hover:underline">
+          {{ $t('nav.news', 'Что нового') }}
+        </NuxtLink>
+      </nav>
 
       <nav class="flex items-center gap-4">
         <UColorModeButton />
