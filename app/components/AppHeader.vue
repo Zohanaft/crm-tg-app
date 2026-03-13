@@ -6,7 +6,12 @@ const { logout } = useLogout()
 <template>
   <header class="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
     <div class="container mx-auto flex h-14 items-center justify-between px-4">
-      <nav class="flex items-center gap-4">
+      
+      <NuxtLink to="/" class="mr-4 flex shrink-0 items-center">
+        <img src="/images/logo.svg" alt="Logo" class="h-9 w-auto" />
+      </NuxtLink>
+      
+      <nav class="flex items-start gap-4">
         <NuxtLink to="/get-started" class="text-sm hover:underline">
           {{ $t('nav.getStarted', 'Как начать') }}
         </NuxtLink>
