@@ -7,10 +7,10 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="p-4 sm:p-6 max-w-2xl mx-auto">
-    <UCard>
+  <div class="mx-auto max-w-2xl p-4 sm:p-6">
+    <UCard class="border-slate-200 shadow-sm dark:border-slate-800">
       <template #header>
-        <h1 class="text-xl font-semibold">
+        <h1 class="text-xl font-semibold text-slate-900 dark:text-white">
           {{ $t('profile.title') }}
         </h1>
       </template>
@@ -29,13 +29,13 @@ definePageMeta({
             size="lg"
           />
           <div>
-            <p class="font-medium">
+            <p class="font-medium text-slate-900 dark:text-white">
               {{ [userStore.user.firstName, userStore.user.lastName].filter(Boolean).join(' ') || userStore.user.username || '—' }}
             </p>
-            <p v-if="userStore.user.username" class="text-sm text-gray-500 dark:text-gray-400">
+            <p v-if="userStore.user.username" class="text-sm text-slate-500 dark:text-slate-400">
               @{{ userStore.user.username }}
             </p>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
+            <p class="text-sm text-slate-500 dark:text-slate-400">
               Telegram ID: {{ userStore.user.telegramId }}
             </p>
           </div>

@@ -8,10 +8,36 @@
     "botsList": "Your bots",
     "botsEmpty": "No bots yet",
     "botsError": "Failed to load bots",
-    "botsLoading": "Loading..."
+    "botsLoading": "Loading...",
+    "workspacesTitle": "Workspaces",
+    "workspacesOwnerHint": "You are the owner of the spaces listed below — full management access.",
+    "workspaceOwnerBadge": "You are the owner",
+    "workspacesLoading": "Loading workspaces...",
+    "workspacesError": "Failed to load workspaces",
+    "workspacesEmptyHint": "No workspaces yet. Create one to organize your team.",
+    "createWorkspace": "Create workspace",
+    "workspaceName": "Name",
+    "workspaceCreate": "Create",
+    "workspaceRename": "Rename",
+    "workspaceSave": "Save",
+    "workspaceCancel": "Cancel",
+    "deleteBot": "Remove bot",
+    "confirmDeleteBotHeading": "Confirm removal",
+    "deleteBotConfirm": "The bot will be disconnected from CRM and the Telegram webhook will be removed. This cannot be undone.",
+    "deleteBotConfirmAction": "Remove",
+    "botRemoved": "Bot removed",
+    "botRemoveError": "Failed to remove bot",
+    "connectedAt": "Connected",
+    "botBoundToYou": "Bound to your account ({name})",
+    "workspaceDelete": "Delete workspace",
+    "workspaceDeleteConfirm": "Permanently delete \"{name}\"? Members will lose access. This cannot be undone.",
+    "workspaceDeleteAction": "Delete",
+    "workspaceDeleted": "Workspace deleted",
+    "workspaceDeleteError": "Failed to delete workspace"
   },
   "connectBot": {
     "title": "Connect bot",
+    "accountHint": "The bot will be linked to your signed-in account.",
     "tokenLabel": "Telegram Bot Token",
     "tokenPlaceholder": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
     "tokenRequired": "Enter the bot token",
@@ -22,10 +48,23 @@
     "errorDescription": "Failed to connect bot"
   },
   "nav": {
+    "getStarted": "Get started",
+    "news": "What's new",
+    "searchPlaceholder": "Search or type command...",
     "signIn": "Sign in",
     "signUp": "Sign up",
     "profile": "Profile",
     "logout": "Log out"
+  },
+  "getStarted": {
+    "title": "Get started",
+    "description": "Instruction for getting started with CRM.",
+    "content": "Page content will be added."
+  },
+  "news": {
+    "title": "What's new",
+    "description": "Latest updates and news.",
+    "content": "Page content will be added."
   },
   "profile": {
     "title": "Profile"
@@ -44,6 +83,8 @@
   },
   "signUp": {
     "title": "Sign up",
+    "orContinueWith": "or continue with",
+    "telegram": "Continue with Telegram",
     "email": "Email",
     "emailPlaceholder": "Enter your email",
     "password": "Password",

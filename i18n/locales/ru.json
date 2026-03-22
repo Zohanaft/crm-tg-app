@@ -8,10 +8,36 @@
     "botsList": "Ваши боты",
     "botsEmpty": "Пока нет ботов",
     "botsError": "Не удалось загрузить ботов",
-    "botsLoading": "Загрузка..."
+    "botsLoading": "Загрузка...",
+    "workspacesTitle": "Рабочие пространства",
+    "workspacesOwnerHint": "Ниже перечислены пространства, владельцем которых вы являетесь — полный доступ к настройкам.",
+    "workspaceOwnerBadge": "Вы владелец",
+    "workspacesLoading": "Загрузка пространств...",
+    "workspacesError": "Не удалось загрузить пространства",
+    "workspacesEmptyHint": "Пока нет пространств. Создайте для совместной работы.",
+    "createWorkspace": "Создать пространство",
+    "workspaceName": "Название",
+    "workspaceCreate": "Создать",
+    "workspaceRename": "Переименовать",
+    "workspaceSave": "Сохранить",
+    "workspaceCancel": "Отмена",
+    "deleteBot": "Удалить бота",
+    "confirmDeleteBotHeading": "Подтвердите удаление",
+    "deleteBotConfirm": "Бот будет отключён от CRM, вебхук в Telegram сброшен. Отменить это действие нельзя.",
+    "deleteBotConfirmAction": "Удалить",
+    "botRemoved": "Бот удалён",
+    "botRemoveError": "Не удалось удалить бота",
+    "connectedAt": "Подключён",
+    "botBoundToYou": "Привязан к вашему аккаунту ({name})",
+    "workspaceDelete": "Удалить пространство",
+    "workspaceDeleteConfirm": "Удалить «{name}» безвозвратно? Участники потеряют доступ.",
+    "workspaceDeleteAction": "Удалить",
+    "workspaceDeleted": "Пространство удалено",
+    "workspaceDeleteError": "Не удалось удалить пространство"
   },
   "connectBot": {
     "title": "Подключить бота",
+    "accountHint": "Бот будет привязан к вашему аккаунту (текущая сессия).",
     "tokenLabel": "Telegram Bot Token",
     "tokenPlaceholder": "123456789:ABCdefGHIjklMNOpqrsTUVwxyz",
     "tokenRequired": "Введите токен бота",
@@ -22,10 +48,23 @@
     "errorDescription": "Не удалось подключить бота"
   },
   "nav": {
+    "getStarted": "Как начать",
+    "news": "Что нового",
+    "searchPlaceholder": "Поиск или команда...",
     "signIn": "Войти",
     "signUp": "Регистрация",
     "profile": "Профиль",
     "logout": "Выйти"
+  },
+  "getStarted": {
+    "title": "Как начать",
+    "description": "Инструкция по началу работы с CRM.",
+    "content": "Содержимое страницы будет добавлено."
+  },
+  "news": {
+    "title": "Что нового",
+    "description": "Последние обновления и новости.",
+    "content": "Содержимое страницы будет добавлено."
   },
   "profile": {
     "title": "Профиль"
@@ -44,6 +83,8 @@
   },
   "signUp": {
     "title": "Регистрация",
+    "orContinueWith": "или продолжить с",
+    "telegram": "Продолжить через Telegram",
     "email": "Email",
     "emailPlaceholder": "Введите email",
     "password": "Пароль",

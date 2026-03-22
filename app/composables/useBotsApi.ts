@@ -1,13 +1,9 @@
 export interface TgBot {
   id: string
+  userId: string
   botId: string
   firstName: string | null
   username: string | null
-  isBot: boolean | null
-  canJoinGroups: boolean | null
-  canReadAllGroupMessages: boolean | null
-  supportsInlineQueries: boolean | null
-  rawData: Record<string, unknown> | null
   createdAt: string
   updatedAt: string
 }
@@ -28,8 +24,8 @@ export function useBotsApi() {
   const { apiFetch, getApiUrl, getRequestHeaders } = useApiFetch()
   const headers = import.meta.server ? getRequestHeaders() : undefined
 
-  async function createBot(token: string): Promise<Omit<TgBot, 'token'>> {
-    return apiFetch<Omit<TgBot, 'token'>>(getApiUrl('/bots'), {
+  async function createBot(token: string): Promise<TgBot> {
+    return apiFetch<TgBot>(getApiUrl('/bots'), {
       method: 'POST',
       body: { token },
       headers,

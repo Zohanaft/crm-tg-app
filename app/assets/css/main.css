@@ -1,2 +1,39 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+/*
+ * Nuxt UI theming: https://ui.nuxt.com/docs/getting-started/theme
+ * - Семантика (primary → blue): app.config.ts → ui.colors
+ * - Оттенки палитры: @theme static + --color-{name}-{shade}
+ */
+
+/* Синяя палитра primary (blue): чуть насыщеннее стандартного Tailwind blue */
+@theme static {
+  --color-blue-50: #eff8ff;
+  --color-blue-100: #dbeafe;
+  --color-blue-200: #bfdbfe;
+  --color-blue-300: #93c5fd;
+  --color-blue-400: #60a5fa;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1d4ed8;
+  --color-blue-800: #1e40af;
+  --color-blue-900: #1e3a8a;
+  --color-blue-950: #172554;
+}
+
+/*
+ * Шрифт: подключи вручную (Google Fonts / @nuxt/fonts), затем раскомментируй:
+ * @theme { --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif; }
+ */
+
+/* Светлая тема: белый + лёгкий сине-серый фон. Тёмная: глубокий сине-серый + синие акценты через primary */
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+}

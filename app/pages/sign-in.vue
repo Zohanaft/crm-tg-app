@@ -72,10 +72,10 @@ const loginViaTelegram = () => {
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center p-4">
-    <UCard class="w-full max-w-md">
+  <div class="flex min-h-[calc(100dvh-3.5rem)] items-center justify-center p-4 sm:p-6">
+    <UCard class="w-full max-w-md border-slate-200 shadow-md dark:border-slate-800">
       <template #header>
-        <h2 class="text-xl font-semibold">
+        <h2 class="text-xl font-semibold text-slate-900 dark:text-white">
           {{ $t('signIn.title') }}
         </h2>
       </template>
@@ -103,16 +103,26 @@ const loginViaTelegram = () => {
           />
         </UFormField>
 
-        <UButton type="submit" block size="lg" disabled>
+        <UButton type="submit" color="primary" block size="lg" class="rounded-full" disabled>
           {{ $t('signIn.submit') }}
         </UButton>
       </UForm>
 
       <USeparator :label="$t('signIn.orContinueWith')" class="my-6" />
 
-      <UButton block size="lg" @click="loginViaTelegram">
-        {{ $t('signIn.telegram') }}
-      </UButton>
+      <div class="flex justify-center">
+        <UButton
+          color="secondary"
+          variant="outline"
+          size="xl"
+          square
+          class="rounded-full"
+          icon="i-mdi-telegram"
+          :title="$t('signIn.telegram')"
+          :aria-label="$t('signIn.telegram')"
+          @click="loginViaTelegram"
+        />
+      </div>
     </UCard>
   </div>
 </template>

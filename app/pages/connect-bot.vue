@@ -9,9 +9,11 @@ definePageMeta({
 const { t } = useI18n()
 const botsStore = useBotsStore()
 
-const connectBotFormSchema = computed(() => v.object({
-  token: v.pipe(v.string(), v.minLength(1, t('connectBot.tokenRequired'))),
-}))
+const connectBotFormSchema = computed(() =>
+  v.object({
+    token: v.pipe(v.string(), v.minLength(1, t('connectBot.tokenRequired'))),
+  }),
+)
 
 type ConnectBotFormState = { token: string }
 
@@ -45,15 +47,24 @@ async function onSubmit(_event: FormSubmitEvent<ConnectBotFormState>) {
 </script>
 
 <template>
-  <div class="container mx-auto max-w-md p-8">
-    <UCard>
+  <div class="mx-auto max-w-md p-4 sm:p-8">
+    <UCard class="border-slate-200 shadow-sm dark:border-slate-800">
       <template #header>
-        <h2 class="text-xl font-semibold">
+        <h2 class="text-xl font-semibold text-slate-900 dark:text-white">
           {{ $t('connectBot.title') }}
         </h2>
       </template>
 
-      <UForm :schema="connectBotFormSchema" :state="state" class="space-y-4" @submit="onSubmit">
+      <p class="mb-4 text-sm text-slate-600 dark:text-slate-400">
+        {{ $t('connectBot.accountHint') }}
+      </p>
+
+      <UForm
+        :schema="connectBotFormSchema"
+        :state="state"
+        class="space-y-4"
+        @submit="onSubmit"
+      >
         <UFormField :label="$t('connectBot.tokenLabel')" name="token">
           <UInput
             v-model="state.token"
@@ -64,7 +75,14 @@ async function onSubmit(_event: FormSubmitEvent<ConnectBotFormState>) {
           />
         </UFormField>
 
-        <UButton type="submit" block :loading="loading" :disabled="loading">
+        <UButton
+          type="submit"
+          color="primary"
+          block
+          class="rounded-full"
+          :loading="loading"
+          :disabled="loading"
+        >
           {{ $t('connectBot.submit') }}
         </UButton>
       </UForm>

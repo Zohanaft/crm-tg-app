@@ -4,8 +4,10 @@ import { apiFetch, getApiUrl } from '~/composables/useApiFetch'
 async function performLogout(options?: { redirect?: boolean }) {
   const userStore = useUserStore()
   const botsStore = useBotsStore()
+  const wsStore = useWorkspacesStore()
   userStore.clearUser()
   botsStore.clearBots()
+  wsStore.clear()
   try {
     await apiFetch(getApiUrl('/logout'), { method: 'POST', public: true })
   } catch {
