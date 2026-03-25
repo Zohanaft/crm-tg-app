@@ -33,7 +33,13 @@
     "workspaceDeleteConfirm": "Permanently delete \"{name}\"? Members will lose access. This cannot be undone.",
     "workspaceDeleteAction": "Delete",
     "workspaceDeleted": "Workspace deleted",
-    "workspaceDeleteError": "Failed to delete workspace"
+    "workspaceDeleteError": "Failed to delete workspace",
+    "clientsTitle": "Clients",
+    "clientsHint": "Live list for selected workspace",
+    "clientsWorkspaceLabel": "Workspace",
+    "clientsLoading": "Loading clients...",
+    "clientsError": "Failed to load clients",
+    "clientsEmpty": "No clients yet"
   },
   "connectBot": {
     "title": "Connect bot",

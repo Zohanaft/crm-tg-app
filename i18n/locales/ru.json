@@ -33,7 +33,13 @@
     "workspaceDeleteConfirm": "Удалить «{name}» безвозвратно? Участники потеряют доступ.",
     "workspaceDeleteAction": "Удалить",
     "workspaceDeleted": "Пространство удалено",
-    "workspaceDeleteError": "Не удалось удалить пространство"
+    "workspaceDeleteError": "Не удалось удалить пространство",
+    "clientsTitle": "Клиенты",
+    "clientsHint": "Живой список для выбранного пространства",
+    "clientsWorkspaceLabel": "Пространство",
+    "clientsLoading": "Загрузка клиентов...",
+    "clientsError": "Не удалось загрузить клиентов",
+    "clientsEmpty": "Пока нет клиентов"
   },
   "connectBot": {
     "title": "Подключить бота",

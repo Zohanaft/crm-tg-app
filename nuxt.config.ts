@@ -12,6 +12,7 @@ export default defineNuxtConfig({
     apiPathPrefix: process.env.NUXT_API_PATH_PREFIX || '',
     public: {
       apiPathPrefix: process.env.NUXT_API_PATH_PREFIX || '/api',
+      wssPath: process.env.NUXT_WSS_PATH || '/api/wss',
     },
   },
   devServer: {

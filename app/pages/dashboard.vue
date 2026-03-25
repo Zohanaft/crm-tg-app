@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { Client } from '~/composables/useClientsApi'
 import type { Workspace } from '~/composables/useWorkspacesApi'
 
 definePageMeta({
@@ -17,6 +18,7 @@ const userDisplayName = computed(() => {
 })
 const botsStore = useBotsStore()
 const wsStore = useWorkspacesStore()
+const { listForWorkspace } = useClientsApi()
 
 await useAsyncData('dashboard-init', async () => {
   await Promise.all([
@@ -24,6 +26,65 @@ await useAsyncData('dashboard-init', async () => {
     wsStore.fetchMy().catch(() => {}),
   ])
   return true
+})
+
+const selectedWorkspaceId = ref<string | null>(null)
+const clients = ref<Client[]>([])
+const clientsPending = ref(false)
+const clientsError = ref<string | null>(null)
+
+function upsertClient(nextClient: Client) {
+  const idx = clients.value.findIndex((client) => client.id === nextClient.id || client.telegramId === nextClient.telegramId)
+  if (idx === -1) {
+    clients.value = [nextClient, ...clients.value]
+    return
+  }
+  const clone = [...clients.value]
+  clone[idx] = { ...clone[idx], ...nextClient }
+  clients.value = clone
+}
+
+watch(
+  () => wsStore.workspaces,
+  (items) => {
+    if (!items.length) {
+      selectedWorkspaceId.value = null
+      return
+    }
+    if (!selectedWorkspaceId.value || !items.some((workspace) => workspace.id === selectedWorkspaceId.value)) {
+      selectedWorkspaceId.value = items[0]?.id ?? null
+    }
+  },
+  { immediate: true, deep: true },
+)
+
+watch(
+  selectedWorkspaceId,
+  async (workspaceId) => {
+    if (!workspaceId) {
+      clients.value = []
+      clientsError.value = null
+      return
+    }
+    clientsPending.value = true
+    clientsError.value = null
+    try {
+      clients.value = await listForWorkspace(workspaceId)
+    } catch (error) {
+      clientsError.value = error instanceof Error ? error.message : String(error)
+    } finally {
+      clientsPending.value = false
+    }
+  },
+  { immediate: true },
+)
+
+useWorkspaceWss(selectedWorkspaceId, {
+  onClientStart(client, workspaceIds) {
+    if (!selectedWorkspaceId.value) return
+    if (!workspaceIds.includes(selectedWorkspaceId.value)) return
+    upsertClient(client)
+  },
 })
 
 const renameOpen = ref(false)
@@ -107,7 +168,7 @@ function formatDate(iso: string) {
 </script>
 
 <template>
-  <div class="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
+  <div class="p-4 sm:p-6 lg:p-8">
     <div class="mb-8">
       <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
         {{ $t('dashboard.title') }}
@@ -127,119 +188,185 @@ function formatDate(iso: string) {
       </div>
     </div>
 
-    <section class="mb-10">
-      <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 class="text-lg font-semibold text-slate-800 dark:text-slate-200">
-            {{ $t('dashboard.workspacesTitle') }}
-          </h2>
-          <p class="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
-            {{ $t('dashboard.workspacesOwnerHint') }}
-          </p>
-        </div>
-        <UButton color="primary" variant="outline" size="sm" class="rounded-full" @click="openCreate">
-          {{ $t('dashboard.createWorkspace') }}
-        </UButton>
-      </div>
-      <p v-if="wsStore.pending" class="text-slate-500 dark:text-slate-400">
-        {{ $t('dashboard.workspacesLoading') }}
-      </p>
-      <p v-else-if="wsStore.error" class="text-rose-600 dark:text-rose-400">
-        {{ $t('dashboard.workspacesError') }}
-      </p>
-      <p
-        v-else-if="wsStore.isEmpty"
-        class="rounded-xl border border-dashed border-slate-200 bg-white px-6 py-8 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-400"
-      >
-        {{ $t('dashboard.workspacesEmptyHint') }}
-      </p>
-      <ul v-else class="space-y-2">
-        <li
-          v-for="w in wsStore.workspaces"
-          :key="w.id"
-          class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900"
-        >
-          <div class="flex min-w-0 flex-wrap items-center gap-2">
-            <span class="font-medium text-slate-900 dark:text-white">{{ w.name }}</span>
-            <UBadge
-              v-if="user?.id === w.ownerId"
-              color="primary"
-              variant="subtle"
-              class="shrink-0"
-            >
-              {{ $t('dashboard.workspaceOwnerBadge') }}
-            </UBadge>
-          </div>
-          <div class="flex shrink-0 flex-wrap items-center gap-1">
-            <UButton color="neutral" variant="ghost" size="sm" class="rounded-full" @click="openRename(w)">
-              {{ $t('dashboard.workspaceRename') }}
-            </UButton>
-            <UButton
-              color="error"
-              variant="ghost"
-              size="sm"
-              square
-              class="rounded-full"
-              icon="i-lucide-trash-2"
-              :title="$t('dashboard.workspaceDelete')"
-              :aria-label="$t('dashboard.workspaceDelete')"
-              @click="openDeleteWorkspace(w)"
-            />
-          </div>
-        </li>
-      </ul>
-    </section>
-
-    <section>
-      <h2 class="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">
-        {{ $t('dashboard.botsList') }}
-      </h2>
-      <p v-if="botsStore.pending" class="text-slate-500 dark:text-slate-400">
-        {{ $t('dashboard.botsLoading') }}
-      </p>
-      <p v-else-if="botsStore.error" class="text-rose-600 dark:text-rose-400">
-        {{ $t('dashboard.botsError') }}
-      </p>
-      <p
-        v-else-if="botsStore.isEmpty"
-        class="rounded-xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-400"
-      >
-        {{ $t('dashboard.botsEmpty') }}
-      </p>
-      <div v-else class="space-y-4">
-        <UCard
-          v-for="bot in botsStore.bots"
-          :key="bot.id"
-          class="overflow-hidden border-slate-200 shadow-sm dark:border-slate-800"
-        >
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+      <div class="space-y-10">
+        <section>
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p class="font-semibold text-slate-900 dark:text-white">
-                {{ bot.firstName ?? bot.username ?? 'Bot' }}
-                <span v-if="bot.username" class="ml-1 text-slate-500 dark:text-slate-400">@{{ bot.username }}</span>
-              </p>
-              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                {{ $t('dashboard.botBoundToYou', { name: userDisplayName }) }}
-              </p>
-              <p class="text-sm text-slate-500 dark:text-slate-400">
-                {{ $t('dashboard.connectedAt') }}: {{ formatDate(bot.createdAt) }}
+              <h2 class="text-lg font-semibold text-slate-800 dark:text-slate-200">
+                {{ $t('dashboard.workspacesTitle') }}
+              </h2>
+              <p class="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
+                {{ $t('dashboard.workspacesOwnerHint') }}
               </p>
             </div>
-            <UButton
-              color="error"
-              variant="ghost"
-              size="sm"
-              square
-              class="shrink-0 rounded-full"
-              icon="i-lucide-trash-2"
-              :title="$t('dashboard.deleteBot')"
-              :aria-label="$t('dashboard.deleteBot')"
-              @click="openDeleteBot(bot.botId)"
-            />
+            <UButton color="primary" variant="outline" size="sm" class="rounded-full" @click="openCreate">
+              {{ $t('dashboard.createWorkspace') }}
+            </UButton>
+          </div>
+          <p v-if="wsStore.pending" class="text-slate-500 dark:text-slate-400">
+            {{ $t('dashboard.workspacesLoading') }}
+          </p>
+          <p v-else-if="wsStore.error" class="text-rose-600 dark:text-rose-400">
+            {{ $t('dashboard.workspacesError') }}
+          </p>
+          <p
+            v-else-if="wsStore.isEmpty"
+            class="rounded-xl border border-dashed border-slate-200 bg-white px-6 py-8 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-400"
+          >
+            {{ $t('dashboard.workspacesEmptyHint') }}
+          </p>
+          <ul v-else class="space-y-2">
+            <li
+              v-for="w in wsStore.workspaces"
+              :key="w.id"
+              class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900"
+            >
+              <div class="flex min-w-0 flex-wrap items-center gap-2">
+                <span class="font-medium text-slate-900 dark:text-white">{{ w.name }}</span>
+                <UBadge
+                  v-if="user?.id === w.ownerId"
+                  color="primary"
+                  variant="subtle"
+                  class="shrink-0"
+                >
+                  {{ $t('dashboard.workspaceOwnerBadge') }}
+                </UBadge>
+              </div>
+              <div class="flex shrink-0 flex-wrap items-center gap-1">
+                <UButton color="neutral" variant="ghost" size="sm" class="rounded-full" @click="openRename(w)">
+                  {{ $t('dashboard.workspaceRename') }}
+                </UButton>
+                <UButton
+                  color="error"
+                  variant="ghost"
+                  size="sm"
+                  square
+                  class="rounded-full"
+                  icon="i-lucide-trash-2"
+                  :title="$t('dashboard.workspaceDelete')"
+                  :aria-label="$t('dashboard.workspaceDelete')"
+                  @click="openDeleteWorkspace(w)"
+                />
+              </div>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 class="mb-4 text-lg font-semibold text-slate-800 dark:text-slate-200">
+            {{ $t('dashboard.botsList') }}
+          </h2>
+          <p v-if="botsStore.pending" class="text-slate-500 dark:text-slate-400">
+            {{ $t('dashboard.botsLoading') }}
+          </p>
+          <p v-else-if="botsStore.error" class="text-rose-600 dark:text-rose-400">
+            {{ $t('dashboard.botsError') }}
+          </p>
+          <p
+            v-else-if="botsStore.isEmpty"
+            class="rounded-xl border border-dashed border-slate-200 bg-white px-6 py-10 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-400"
+          >
+            {{ $t('dashboard.botsEmpty') }}
+          </p>
+          <div v-else class="space-y-4">
+            <UCard
+              v-for="bot in botsStore.bots"
+              :key="bot.id"
+              class="overflow-hidden border-slate-200 shadow-sm dark:border-slate-800"
+            >
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p class="font-semibold text-slate-900 dark:text-white">
+                    {{ bot.firstName ?? bot.username ?? 'Bot' }}
+                    <span v-if="bot.username" class="ml-1 text-slate-500 dark:text-slate-400">@{{ bot.username }}</span>
+                  </p>
+                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    {{ $t('dashboard.botBoundToYou', { name: userDisplayName }) }}
+                  </p>
+                  <p class="text-sm text-slate-500 dark:text-slate-400">
+                    {{ $t('dashboard.connectedAt') }}: {{ formatDate(bot.createdAt) }}
+                  </p>
+                </div>
+                <UButton
+                  color="error"
+                  variant="ghost"
+                  size="sm"
+                  square
+                  class="shrink-0 rounded-full"
+                  icon="i-lucide-trash-2"
+                  :title="$t('dashboard.deleteBot')"
+                  :aria-label="$t('dashboard.deleteBot')"
+                  @click="openDeleteBot(bot.botId)"
+                />
+              </div>
+            </UCard>
+          </div>
+        </section>
+      </div>
+
+      <aside class="space-y-4 lg:sticky lg:top-6 lg:self-start">
+        <UCard class="border-slate-200 shadow-sm dark:border-slate-800">
+          <template #header>
+            <div class="space-y-1">
+              <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+                {{ $t('dashboard.clientsTitle') }}
+              </h2>
+              <p class="text-sm text-slate-500 dark:text-slate-400">
+                {{ $t('dashboard.clientsHint') }}
+              </p>
+            </div>
+          </template>
+
+          <div class="space-y-4">
+            <div>
+              <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                {{ $t('dashboard.clientsWorkspaceLabel') }}
+              </label>
+              <select
+                v-model="selectedWorkspaceId"
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-primary-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              >
+                <option v-for="workspace in wsStore.workspaces" :key="workspace.id" :value="workspace.id">
+                  {{ workspace.name }}
+                </option>
+              </select>
+            </div>
+
+            <p v-if="clientsPending" class="text-sm text-slate-500 dark:text-slate-400">
+              {{ $t('dashboard.clientsLoading') }}
+            </p>
+            <p v-else-if="clientsError" class="text-sm text-rose-600 dark:text-rose-400">
+              {{ $t('dashboard.clientsError') }}
+            </p>
+            <p
+              v-else-if="!clients.length"
+              class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-400"
+            >
+              {{ $t('dashboard.clientsEmpty') }}
+            </p>
+
+            <ul v-else class="max-h-[58vh] space-y-2 overflow-y-auto pr-1">
+              <li
+                v-for="client in clients"
+                :key="client.id"
+                class="rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
+              >
+                <p class="font-medium text-slate-900 dark:text-slate-100">
+                  {{ client.firstName || client.username || client.telegramId }}
+                </p>
+                <p v-if="client.username" class="text-xs text-slate-500 dark:text-slate-400">
+                  @{{ client.username }}
+                </p>
+                <p v-if="client.createdAt" class="text-xs text-slate-500 dark:text-slate-400">
+                  {{ $t('dashboard.connectedAt') }}: {{ formatDate(client.createdAt) }}
+                </p>
+              </li>
+            </ul>
           </div>
         </UCard>
-      </div>
-    </section>
+      </aside>
+    </div>
 
     <Teleport to="body">
       <div
