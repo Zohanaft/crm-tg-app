@@ -80,12 +80,6 @@ watch(
   { immediate: true },
 )
 
-const wssAllRef = ref<string | null>(null)
-useWorkspaceWss(wssAllRef, {
-  global: true,
-  enabled: loggedIn,
-})
-
 const notifBadgeCount = computed(
   () => actionsStore.unreadCount + pendingInvites.value.length,
 )
