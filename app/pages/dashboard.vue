@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { Client } from '~/composables/useClientsApi'
 import type { Workspace } from '~/composables/useWorkspacesApi'
+import type { UserSearchItem } from '~/composables/useUsersApi'
+import { watchDebounced } from '@vueuse/core'
 
 definePageMeta({
   middleware: 'auth-private',
@@ -19,6 +21,8 @@ const userDisplayName = computed(() => {
 const botsStore = useBotsStore()
 const wsStore = useWorkspacesStore()
 const { listForWorkspace } = useClientsApi()
+const { search: searchUsers } = useUsersApi()
+const { create: createInvite } = useWorkspaceInvitesApi()
 
 await useAsyncData('dashboard-init', async () => {
   await Promise.all([
@@ -165,6 +169,62 @@ function formatDate(iso: string) {
     return iso
   }
 }
+
+const inviteOpen = ref(false)
+const inviteTarget = ref<Workspace | null>(null)
+const inviteQuery = ref('')
+const inviteHits = ref<UserSearchItem[]>([])
+const inviteLoading = ref(false)
+const pickedInviteUser = ref<UserSearchItem | null>(null)
+
+function openInvite(w: Workspace) {
+  inviteTarget.value = w
+  inviteQuery.value = ''
+  inviteHits.value = []
+  pickedInviteUser.value = null
+  inviteOpen.value = true
+}
+
+function userSearchLabel(u: UserSearchItem) {
+  const name = [u.firstName, u.lastName].filter(Boolean).join(' ').trim()
+  if (name && u.username) return `${name} (@${u.username})`
+  if (u.username) return `@${u.username}`
+  return name || u.id.slice(0, 8)
+}
+
+watchDebounced(
+  [inviteQuery, inviteOpen, inviteTarget],
+  async () => {
+    if (!inviteOpen.value || !inviteTarget.value) return
+    const q = inviteQuery.value.trim()
+    if (q.length < 1) {
+      inviteHits.value = []
+      return
+    }
+    inviteLoading.value = true
+    try {
+      inviteHits.value = await searchUsers(inviteTarget.value.id, q)
+    } catch {
+      inviteHits.value = []
+    } finally {
+      inviteLoading.value = false
+    }
+  },
+  { debounce: 300 },
+)
+
+async function sendWorkspaceInvite() {
+  const w = inviteTarget.value
+  const u = pickedInviteUser.value
+  if (!w || !u) return
+  try {
+    await createInvite(w.id, u.id)
+    toast.add({ title: t('dashboard.workspaceInviteSuccess'), color: 'success' })
+    inviteOpen.value = false
+  } catch {
+    toast.add({ title: t('dashboard.workspaceInviteError'), color: 'error' })
+  }
+}
 </script>
 
 <template>
@@ -234,6 +294,17 @@ function formatDate(iso: string) {
                 </UBadge>
               </div>
               <div class="flex shrink-0 flex-wrap items-center gap-1">
+                <UButton
+                  color="primary"
+                  variant="soft"
+                  size="sm"
+                  square
+                  class="rounded-full"
+                  icon="i-lucide-plus"
+                  :title="$t('dashboard.workspaceInvite')"
+                  :aria-label="$t('dashboard.workspaceInvite')"
+                  @click="openInvite(w)"
+                />
                 <UButton color="neutral" variant="ghost" size="sm" class="rounded-full" @click="openRename(w)">
                   {{ $t('dashboard.workspaceRename') }}
                 </UButton>
@@ -367,6 +438,69 @@ function formatDate(iso: string) {
         </UCard>
       </aside>
     </div>
+
+    <Teleport to="body">
+      <div
+        v-if="inviteOpen"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        @click.self="inviteOpen = false"
+      >
+        <UCard class="w-full max-w-md">
+          <template #header>
+            <span class="font-semibold">{{ $t('dashboard.workspaceInvite') }}</span>
+          </template>
+          <div class="space-y-4">
+            <p v-if="inviteTarget" class="text-sm text-slate-600 dark:text-slate-400">
+              {{ inviteTarget.name }}
+            </p>
+            <UInput
+              v-model="inviteQuery"
+              :placeholder="$t('dashboard.workspaceInviteSearch')"
+              icon="i-lucide-search"
+              class="w-full"
+            />
+            <p v-if="inviteLoading" class="text-xs text-slate-500">
+              …
+            </p>
+            <p v-else-if="inviteQuery.trim().length > 0 && !inviteHits.length" class="text-xs text-slate-500">
+              {{ $t('dashboard.workspaceInviteNoResults') }}
+            </p>
+            <ul
+              v-else-if="inviteHits.length"
+              class="max-h-48 space-y-1 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700"
+            >
+              <li v-for="u in inviteHits" :key="u.id">
+                <button
+                  type="button"
+                  class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
+                  :class="
+                    pickedInviteUser?.id === u.id ? 'bg-primary-50 dark:bg-primary-950/40' : ''
+                  "
+                  @click="pickedInviteUser = u"
+                >
+                  <UAvatar v-if="u.photoUrl" :src="u.photoUrl" size="xs" alt="" />
+                  <UAvatar v-else :text="userSearchLabel(u)" size="xs" />
+                  <span>{{ userSearchLabel(u) }}</span>
+                </button>
+              </li>
+            </ul>
+            <div class="flex justify-end gap-2">
+              <UButton color="neutral" variant="ghost" class="rounded-full" @click="inviteOpen = false">
+                {{ $t('dashboard.workspaceCancel') }}
+              </UButton>
+              <UButton
+                color="primary"
+                class="rounded-full"
+                :disabled="!pickedInviteUser"
+                @click="sendWorkspaceInvite"
+              >
+                {{ $t('dashboard.workspaceInviteSend') }}
+              </UButton>
+            </div>
+          </div>
+        </UCard>
+      </div>
+    </Teleport>
 
     <Teleport to="body">
       <div

@@ -39,7 +39,20 @@
     "clientsWorkspaceLabel": "Пространство",
     "clientsLoading": "Загрузка клиентов...",
     "clientsError": "Не удалось загрузить клиентов",
-    "clientsEmpty": "Пока нет клиентов"
+    "clientsEmpty": "Пока нет клиентов",
+    "workspaceInvite": "Пригласить участника",
+    "workspaceInviteSearch": "Поиск по имени или {'@'}username",
+    "workspaceInviteSend": "Отправить приглашение",
+    "workspaceInviteNoResults": "Пользователи не найдены",
+    "workspaceInviteSuccess": "Приглашение отправлено",
+    "workspaceInviteError": "Не удалось отправить приглашение"
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "empty": "Пока нет уведомлений",
+    "invitesTitle": "Приглашения",
+    "acceptInvite": "Принять",
+    "inviteAccepted": "Вы вступили в пространство"
   },
   "connectBot": {
     "title": "Подключить бота",
@@ -60,7 +73,8 @@
     "signIn": "Войти",
     "signUp": "Регистрация",
     "profile": "Профиль",
-    "logout": "Выйти"
+    "logout": "Выйти",
+    "notifications": "Уведомления"
   },
   "getStarted": {
     "title": "Как начать",

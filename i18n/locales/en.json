@@ -39,7 +39,20 @@
     "clientsWorkspaceLabel": "Workspace",
     "clientsLoading": "Loading clients...",
     "clientsError": "Failed to load clients",
-    "clientsEmpty": "No clients yet"
+    "clientsEmpty": "No clients yet",
+    "workspaceInvite": "Invite member",
+    "workspaceInviteSearch": "Search by name or {'@'}username",
+    "workspaceInviteSend": "Send invite",
+    "workspaceInviteNoResults": "No users found",
+    "workspaceInviteSuccess": "Invitation sent",
+    "workspaceInviteError": "Could not send invitation"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "invitesTitle": "Pending invites",
+    "acceptInvite": "Accept",
+    "inviteAccepted": "You joined the workspace"
   },
   "connectBot": {
     "title": "Connect bot",
@@ -60,7 +73,8 @@
     "signIn": "Sign in",
     "signUp": "Sign up",
     "profile": "Profile",
-    "logout": "Log out"
+    "logout": "Log out",
+    "notifications": "Notifications"
   },
   "getStarted": {
     "title": "Get started",
