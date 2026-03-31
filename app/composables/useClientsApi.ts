@@ -20,6 +20,11 @@ export function useClientsApi() {
     return apiFetch<Client[]>(url, { method: 'GET', headers })
   }
 
-  return { listForWorkspace }
+  async function removeForWorkspace(workspaceId: string, clientId: string): Promise<void> {
+    const url = `${getApiUrl(`/clients/${encodeURIComponent(clientId)}`)}?workspaceId=${encodeURIComponent(workspaceId)}`
+    await apiFetch(url, { method: 'DELETE', headers })
+  }
+
+  return { listForWorkspace, removeForWorkspace }
 }
 

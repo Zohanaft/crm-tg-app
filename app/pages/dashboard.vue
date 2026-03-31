@@ -20,7 +20,7 @@ const userDisplayName = computed(() => {
 })
 const botsStore = useBotsStore()
 const wsStore = useWorkspacesStore()
-const { listForWorkspace } = useClientsApi()
+const { listForWorkspace, removeForWorkspace } = useClientsApi()
 const { search: searchUsers } = useUsersApi()
 const { create: createInvite } = useWorkspaceInvitesApi()
 
@@ -167,6 +167,17 @@ function formatDate(iso: string) {
     return new Date(iso).toLocaleString()
   } catch {
     return iso
+  }
+}
+
+async function deleteClient(clientId: string) {
+  if (!selectedWorkspaceId.value) return
+  try {
+    await removeForWorkspace(selectedWorkspaceId.value, clientId)
+    clients.value = clients.value.filter((client) => client.id !== clientId)
+    toast.add({ title: t('dashboard.clientRemoved'), color: 'success' })
+  } catch {
+    toast.add({ title: t('dashboard.clientRemoveError'), color: 'error' })
   }
 }
 
@@ -423,15 +434,30 @@ async function sendWorkspaceInvite() {
                 :key="client.id"
                 class="rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
               >
-                <p class="font-medium text-slate-900 dark:text-slate-100">
-                  {{ client.firstName || client.username || client.telegramId }}
-                </p>
-                <p v-if="client.username" class="text-xs text-slate-500 dark:text-slate-400">
-                  @{{ client.username }}
-                </p>
-                <p v-if="client.createdAt" class="text-xs text-slate-500 dark:text-slate-400">
-                  {{ $t('dashboard.connectedAt') }}: {{ formatDate(client.createdAt) }}
-                </p>
+                <div class="flex items-start justify-between gap-2">
+                  <div class="min-w-0">
+                    <p class="font-medium text-slate-900 dark:text-slate-100">
+                      {{ client.firstName || client.username || client.telegramId }}
+                    </p>
+                    <p v-if="client.username" class="text-xs text-slate-500 dark:text-slate-400">
+                      @{{ client.username }}
+                    </p>
+                    <p v-if="client.createdAt" class="text-xs text-slate-500 dark:text-slate-400">
+                      {{ $t('dashboard.connectedAt') }}: {{ formatDate(client.createdAt) }}
+                    </p>
+                  </div>
+                  <UButton
+                    color="error"
+                    variant="ghost"
+                    size="xs"
+                    square
+                    class="shrink-0 rounded-full"
+                    icon="i-lucide-trash-2"
+                    :title="$t('dashboard.deleteClient')"
+                    :aria-label="$t('dashboard.deleteClient')"
+                    @click="deleteClient(client.id)"
+                  />
+                </div>
               </li>
             </ul>
           </div>
