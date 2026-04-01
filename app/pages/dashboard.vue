@@ -54,6 +54,10 @@ function upsertClient(nextClient: Client) {
   clients.value = clone
 }
 
+function removeClientFromList(clientId: string) {
+  clients.value = clients.value.filter((client) => client.id !== clientId)
+}
+
 watch(
   () => wsStore.workspaces,
   (items) => {
@@ -99,12 +103,32 @@ watch(
   { immediate: true },
 )
 
-useWorkspaceWss(selectedWorkspaceId, {
-  onClientStart(client, workspaceIds) {
+let clientsSyncChannel: BroadcastChannel | null = null
+onMounted(() => {
+  if (typeof BroadcastChannel === 'undefined') return
+  clientsSyncChannel = new BroadcastChannel('tg-crm-wss-sync-v1')
+  clientsSyncChannel.addEventListener('message', (event: MessageEvent) => {
+    const msg = event.data as
+      | { type: 'client:start'; client?: Client; workspaceIds?: string[] }
+      | { type: 'client:deleted'; clientId?: string; workspaceIds?: string[] }
+      | undefined
+    if (!msg) return
     if (!selectedWorkspaceId.value) return
-    if (!workspaceIds.includes(selectedWorkspaceId.value)) return
-    upsertClient(client)
-  },
+    if (!Array.isArray(msg.workspaceIds) || !msg.workspaceIds.includes(selectedWorkspaceId.value)) return
+    if (msg.type === 'client:start') {
+      if (!msg.client) return
+      upsertClient(msg.client)
+      return
+    }
+    if (msg.type === 'client:deleted' && msg.clientId) {
+      removeClientFromList(msg.clientId)
+    }
+  })
+})
+
+onBeforeUnmount(() => {
+  clientsSyncChannel?.close()
+  clientsSyncChannel = null
 })
 
 const renameOpen = ref(false)
@@ -212,7 +236,12 @@ async function deleteClient(clientId: string) {
   if (!selectedWorkspaceId.value) return
   try {
     await removeForWorkspace(selectedWorkspaceId.value, clientId)
-    clients.value = clients.value.filter((client) => client.id !== clientId)
+    removeClientFromList(clientId)
+    clientsSyncChannel?.postMessage({
+      type: 'client:deleted',
+      clientId,
+      workspaceIds: [selectedWorkspaceId.value],
+    })
     toast.add({ title: t('dashboard.clientRemoved'), color: 'success' })
   } catch {
     toast.add({ title: t('dashboard.clientRemoveError'), color: 'error' })

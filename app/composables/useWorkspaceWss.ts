@@ -25,6 +25,15 @@ type MemberJoinedMessage = {
   payload?: Record<string, unknown>
 }
 
+type ClientDeletedMessage = {
+  type: 'client:deleted'
+  ts?: string
+  payload?: {
+    clientId?: string
+    workspaceIds?: string[]
+  }
+}
+
 export function useWorkspaceWss(
   workspaceId: Ref<string | null>,
   opts: {
@@ -33,6 +42,7 @@ export function useWorkspaceWss(
     /** When false, socket URL is undefined (no connection). */
     enabled?: Ref<boolean>
     onClientStart?: (client: Client, workspaceIds: string[]) => void
+    onClientDeleted?: (clientId: string, workspaceIds: string[]) => void
     onActionCreated?: (action: FeedAction) => void
     onMemberJoined?: (payload: Record<string, unknown>) => void
   },
@@ -63,7 +73,12 @@ export function useWorkspaceWss(
       const text = typeof event.data === 'string' ? event.data : event.data?.toString?.() ?? ''
       if (!text) return
 
-      let msg: ClientStartMessage | ActionCreatedMessage | MemberJoinedMessage | { type?: string }
+      let msg:
+        | ClientStartMessage
+        | ActionCreatedMessage
+        | MemberJoinedMessage
+        | ClientDeletedMessage
+        | { type?: string }
       try {
         msg = JSON.parse(text) as typeof msg
       } catch {
@@ -79,6 +94,14 @@ export function useWorkspaceWss(
         const m = msg as ClientStartMessage
         if (!m.payload?.client || !opts.onClientStart) return
         opts.onClientStart(m.payload.client, m.payload.workspaceIds ?? [])
+        return
+      }
+
+      if (msg.type === 'client:deleted') {
+        const m = msg as ClientDeletedMessage
+        const clientId = m.payload?.clientId
+        if (!clientId) return
+        opts.onClientDeleted?.(clientId, m.payload?.workspaceIds ?? [])
         return
       }
 
