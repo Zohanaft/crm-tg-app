@@ -12,6 +12,10 @@
     "workspacesTitle": "Рабочие пространства",
     "workspacesOwnerHint": "Ниже перечислены пространства, владельцем которых вы являетесь — полный доступ к настройкам.",
     "workspaceOwnerBadge": "Вы владелец",
+    "workspaceOwnersSection": "Где я владелец",
+    "workspaceMembersSection": "Где я участник",
+    "workspaceRoleOwner": "Владелец",
+    "workspaceRoleMember": "Участник",
     "workspacesLoading": "Загрузка пространств...",
     "workspacesError": "Не удалось загрузить пространства",
     "workspacesEmptyHint": "Пока нет пространств. Создайте для совместной работы.",
@@ -35,8 +39,7 @@
     "workspaceDeleted": "Пространство удалено",
     "workspaceDeleteError": "Не удалось удалить пространство",
     "clientsTitle": "Клиенты",
-    "clientsHint": "Живой список для выбранного пространства",
-    "clientsWorkspaceLabel": "Пространство",
+    "clientsHint": "Живой список для текущего выбранного пространства",
     "clientsLoading": "Загрузка клиентов...",
     "clientsError": "Не удалось загрузить клиентов",
     "clientsEmpty": "Пока нет клиентов",
@@ -55,7 +58,11 @@
     "empty": "Пока нет уведомлений",
     "invitesTitle": "Приглашения",
     "acceptInvite": "Принять",
-    "inviteAccepted": "Вы вступили в пространство"
+    "inviteAccepted": "Вы вступили в пространство",
+    "markRead": "Прочитано"
+  },
+  "errors": {
+    "workspaceLimitReached": "Достигнут лимит рабочих пространств для плана {plan} (максимум: {max})"
   },
   "connectBot": {
     "title": "Подключить бота",

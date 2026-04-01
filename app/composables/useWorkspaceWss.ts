@@ -94,6 +94,7 @@ export function useWorkspaceWss(
           meta: raw.meta ?? null,
           actorUserId: raw.actorUserId != null ? String(raw.actorUserId) : null,
           recipientUserId: raw.recipientUserId != null ? String(raw.recipientUserId) : null,
+          readAt: raw.readAt == null ? null : String(raw.readAt),
           createdAt:
             typeof raw.createdAt === 'string'
               ? raw.createdAt

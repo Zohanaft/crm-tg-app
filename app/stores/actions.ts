@@ -23,17 +23,41 @@ export const useActionsStore = defineStore('actions', {
     items: [] as FeedAction[],
     pending: false,
     error: null as string | null,
-    lastReadAt: null as string | null,
   }),
   getters: {
     unreadCount(state): number {
-      const threshold = state.lastReadAt ? new Date(state.lastReadAt).getTime() : 0
-      return state.items.filter((a) => new Date(a.createdAt).getTime() > threshold).length
+      return state.items.filter((a) => !a.readAt).length
     },
   },
   actions: {
-    markAllRead() {
-      this.lastReadAt = new Date().toISOString()
+    getNewClientDedupKey(action: FeedAction): string | null {
+      if (action.type !== 'NEW_CLIENT') return null
+      const m = action.meta as
+        | { client?: { telegramId?: string | null; id?: string | null } }
+        | null
+        | undefined
+      const tg = m?.client?.telegramId
+      const id = m?.client?.id
+      if (typeof tg === 'string' && tg.trim()) return `tg:${tg}`
+      if (typeof id === 'string' && id.trim()) return `id:${id}`
+      return null
+    },
+
+    dedupeActions(list: FeedAction[]): FeedAction[] {
+      const seenIds = new Set<string>()
+      const seenNewClients = new Set<string>()
+      const result: FeedAction[] = []
+      for (const a of list) {
+        if (seenIds.has(a.id)) continue
+        seenIds.add(a.id)
+        const dedupKey = this.getNewClientDedupKey(a)
+        if (dedupKey) {
+          if (seenNewClients.has(dedupKey)) continue
+          seenNewClients.add(dedupKey)
+        }
+        result.push(a)
+      }
+      return result
     },
 
     clear() {
@@ -42,6 +66,11 @@ export const useActionsStore = defineStore('actions', {
     },
 
     prependAction(action: FeedAction) {
+      const dedupKey = this.getNewClientDedupKey(action)
+      if (dedupKey) {
+        const existsNewClient = this.items.some((x) => this.getNewClientDedupKey(x) === dedupKey)
+        if (existsNewClient) return
+      }
       const k = actionKey(action)
       if (this.items.some((x) => actionKey(x) === k)) return
       this.items = [action, ...this.items].slice(0, 100)
@@ -52,7 +81,7 @@ export const useActionsStore = defineStore('actions', {
       this.pending = true
       this.error = null
       try {
-        this.items = await list()
+        this.items = this.dedupeActions(await list())
       } catch (e) {
         this.error = e instanceof Error ? e.message : String(e)
       } finally {
@@ -71,6 +100,33 @@ export const useActionsStore = defineStore('actions', {
             : new Date(action.createdAt as unknown as Date).toISOString(),
       }
       this.prependAction(normalized)
+    },
+
+    async markRead(actionId: string) {
+      const idx = this.items.findIndex((x) => x.id === actionId)
+      if (idx === -1) return
+      if (this.items[idx]?.readAt) return
+      const now = new Date().toISOString()
+      const optimistic = [...this.items]
+      optimistic[idx] = { ...optimistic[idx], readAt: now }
+      this.items = optimistic
+      try {
+        const { markRead } = useActionsApi()
+        const updated = await markRead(actionId)
+        const currentIdx = this.items.findIndex((x) => x.id === actionId)
+        if (currentIdx >= 0) {
+          const clone = [...this.items]
+          clone[currentIdx] = { ...clone[currentIdx], readAt: updated.readAt ?? now }
+          this.items = clone
+        }
+      } catch {
+        const rollbackIdx = this.items.findIndex((x) => x.id === actionId)
+        if (rollbackIdx >= 0) {
+          const rollback = [...this.items]
+          rollback[rollbackIdx] = { ...rollback[rollbackIdx], readAt: null }
+          this.items = rollback
+        }
+      }
     },
   },
 })

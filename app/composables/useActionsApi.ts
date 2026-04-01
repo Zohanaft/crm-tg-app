@@ -6,6 +6,7 @@ export interface FeedAction {
   meta: unknown | null
   actorUserId: string | null
   recipientUserId: string | null
+  readAt?: string | null
   createdAt: string
 }
 
@@ -18,5 +19,12 @@ export function useActionsApi() {
     return apiFetch<FeedAction[]>(getApiUrl(`/actions${qs}`), { method: 'GET', headers })
   }
 
-  return { list }
+  async function markRead(actionId: string): Promise<FeedAction> {
+    return apiFetch<FeedAction>(
+      getApiUrl(`/actions/${encodeURIComponent(actionId)}/read`),
+      { method: 'POST', headers },
+    )
+  }
+
+  return { list, markRead }
 }

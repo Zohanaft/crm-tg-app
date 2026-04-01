@@ -12,6 +12,10 @@
     "workspacesTitle": "Workspaces",
     "workspacesOwnerHint": "You are the owner of the spaces listed below — full management access.",
     "workspaceOwnerBadge": "You are the owner",
+    "workspaceOwnersSection": "Owner workspaces",
+    "workspaceMembersSection": "Member workspaces",
+    "workspaceRoleOwner": "Owner",
+    "workspaceRoleMember": "Member",
     "workspacesLoading": "Loading workspaces...",
     "workspacesError": "Failed to load workspaces",
     "workspacesEmptyHint": "No workspaces yet. Create one to organize your team.",
@@ -35,8 +39,7 @@
     "workspaceDeleted": "Workspace deleted",
     "workspaceDeleteError": "Failed to delete workspace",
     "clientsTitle": "Clients",
-    "clientsHint": "Live list for selected workspace",
-    "clientsWorkspaceLabel": "Workspace",
+    "clientsHint": "Live list for currently selected workspace",
     "clientsLoading": "Loading clients...",
     "clientsError": "Failed to load clients",
     "clientsEmpty": "No clients yet",
@@ -55,7 +58,11 @@
     "empty": "No notifications yet",
     "invitesTitle": "Pending invites",
     "acceptInvite": "Accept",
-    "inviteAccepted": "You joined the workspace"
+    "inviteAccepted": "You joined the workspace",
+    "markRead": "Mark as read"
+  },
+  "errors": {
+    "workspaceLimitReached": "Workspace limit reached for plan {plan} (max: {max})"
   },
   "connectBot": {
     "title": "Connect bot",

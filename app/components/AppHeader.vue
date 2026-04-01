@@ -87,9 +87,12 @@ const notifBadgeCount = computed(
 function toggleNotifPanel() {
   notifPanelOpen.value = !notifPanelOpen.value
   if (notifPanelOpen.value) {
-    actionsStore.markAllRead()
     void refreshNotifications()
   }
+}
+
+function markNotificationRead(actionId: string) {
+  void actionsStore.markRead(actionId)
 }
 
 async function onAcceptInvite(inviteId: string) {
@@ -206,6 +209,7 @@ function formatNotifyTime(iso: string) {
                     v-for="a in actionsStore.items.slice(0, 40)"
                     :key="a.id"
                     class="rounded-lg border border-slate-100 px-3 py-2 dark:border-slate-800"
+                    :class="!a.readAt ? 'bg-slate-50/60 dark:bg-slate-800/40' : ''"
                   >
                     <p class="text-xs font-medium text-primary-600 dark:text-primary-400">
                       {{ formatActionTypeLabel(a.type) }}
@@ -214,6 +218,17 @@ function formatNotifyTime(iso: string) {
                     <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
                       {{ formatNotifyTime(a.createdAt) }}
                     </p>
+                    <div v-if="!a.readAt" class="mt-2">
+                      <UButton
+                        size="xs"
+                        color="neutral"
+                        variant="outline"
+                        class="rounded-full"
+                        @click="markNotificationRead(a.id)"
+                      >
+                        {{ $t('notifications.markRead') }}
+                      </UButton>
+                    </div>
                   </li>
                 </ul>
               </div>
