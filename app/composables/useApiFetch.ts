@@ -1,5 +1,5 @@
 import type { NitroFetchOptions, NitroFetchRequest } from 'nitropack'
-import { logout } from '~/composables/useLogout'
+import { clearSession } from '~/composables/useLogout'
 
 const REFRESH_PATH = '/refresh'
 const LOGIN_PATH = '/sign-in'
@@ -87,6 +87,18 @@ export async function apiFetch<T = unknown>(
 
   const doFetch = () => $fetch<T>(url, opts)
 
+  const redirectToSignInIfNeeded = async () => {
+    if (!import.meta.client) return
+    const route = useRoute()
+    if ([LOGIN_PATH, SIGN_UP_PATH].includes(route.path)) return
+
+    const redirecting = useCookie('redirecting', { path: '/', maxAge: 60 * 10 })
+    redirecting.value = route.fullPath || '/'
+
+    const router = useRouter()
+    await router.replace(LOGIN_PATH)
+  }
+
   const handleRefreshFailure = async () => {
     if (import.meta.client) {
       const toast = useToast()
@@ -96,6 +108,7 @@ export async function apiFetch<T = unknown>(
         color: 'warning',
       })
       await clearSession()
+      await redirectToSignInIfNeeded()
     }
   }
 

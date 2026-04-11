@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Client } from '~/composables/useClientsApi'
-import type { Workspace } from '~/composables/useWorkspacesApi'
+import type { Workspace, WorkspaceMember } from '~/composables/useWorkspacesApi'
 import type { UserSearchItem } from '~/composables/useUsersApi'
 import { watchDebounced } from '@vueuse/core'
 
@@ -42,6 +42,7 @@ const clients = ref<Client[]>([])
 const clientsPending = ref(false)
 const clientsError = ref<string | null>(null)
 const failedAvatarByClientId = ref<Record<string, boolean>>({})
+const failedAvatarByMemberUserId = ref<Record<string, boolean>>({})
 
 function upsertClient(nextClient: Client) {
   const idx = clients.value.findIndex((client) => client.id === nextClient.id || client.telegramId === nextClient.telegramId)
@@ -83,6 +84,18 @@ const selectedWorkspaceName = computed(
 )
 
 watch(
+  () => wsStore.workspaces,
+  (items) => {
+    for (const w of items) {
+      if (w.members === undefined) {
+        void wsStore.fetchMembers(w.id).catch(() => {})
+      }
+    }
+  },
+  { immediate: true, deep: true },
+)
+
+watch(
   selectedWorkspaceId,
   async (workspaceId) => {
     if (!workspaceId) {
@@ -111,8 +124,43 @@ onMounted(() => {
     const msg = event.data as
       | { type: 'client:start'; client?: Client; workspaceIds?: string[] }
       | { type: 'client:deleted'; clientId?: string; workspaceIds?: string[] }
+      | {
+          type: 'workspace:member_joined'
+          workspaceId?: string
+          member?: Record<string, unknown>
+        }
       | undefined
     if (!msg) return
+    if (msg.type === 'workspace:member_joined') {
+      const wid = msg.workspaceId
+      const member = msg.member
+      if (
+        typeof wid === 'string'
+        && member
+        && typeof member.userId === 'string'
+      ) {
+        wsStore.upsertMember(wid, {
+          userId: member.userId,
+          username:
+            member.username === null || member.username === undefined
+              ? null
+              : String(member.username),
+          firstName:
+            member.firstName === null || member.firstName === undefined
+              ? null
+              : String(member.firstName),
+          lastName:
+            member.lastName === null || member.lastName === undefined
+              ? null
+              : String(member.lastName),
+          photoUrl:
+            member.photoUrl === null || member.photoUrl === undefined
+              ? null
+              : String(member.photoUrl),
+        })
+      }
+      return
+    }
     if (!selectedWorkspaceId.value) return
     if (!Array.isArray(msg.workspaceIds) || !msg.workspaceIds.includes(selectedWorkspaceId.value)) return
     if (msg.type === 'client:start') {
@@ -122,6 +170,7 @@ onMounted(() => {
     }
     if (msg.type === 'client:deleted' && msg.clientId) {
       removeClientFromList(msg.clientId)
+      toast.add({ title: t('dashboard.clientRemoved'), color: 'success' })
     }
   })
 })
@@ -242,7 +291,6 @@ async function deleteClient(clientId: string) {
       clientId,
       workspaceIds: [selectedWorkspaceId.value],
     })
-    toast.add({ title: t('dashboard.clientRemoved'), color: 'success' })
   } catch {
     toast.add({ title: t('dashboard.clientRemoveError'), color: 'error' })
   }
@@ -301,6 +349,9 @@ function onClientAvatarError(clientId: string) {
 const inviteOpen = ref(false)
 const inviteTarget = ref<Workspace | null>(null)
 const inviteQuery = ref('')
+const inviteQueryNormalized = computed(() =>
+  inviteQuery.value.trim().replace(/^@+/, ''),
+)
 const inviteHits = ref<UserSearchItem[]>([])
 const inviteLoading = ref(false)
 const pickedInviteUser = ref<UserSearchItem | null>(null)
@@ -320,11 +371,82 @@ function userSearchLabel(u: UserSearchItem) {
   return name || u.id.slice(0, 8)
 }
 
+function workspaceMemberLabel(m: WorkspaceMember) {
+  const name = [m.firstName, m.lastName].filter(Boolean).join(' ').trim()
+  if (name && m.username) return `${name} (@${m.username})`
+  if (m.username) return `@${m.username}`
+  return name || m.userId.slice(0, 8)
+}
+
+function memberInitials(m: WorkspaceMember): string {
+  const first = (m.firstName || '').trim()
+  const last = (m.lastName || '').trim()
+  if (first || last) {
+    return `${first.slice(0, 1)}${last.slice(0, 1)}`.toUpperCase()
+  }
+  const username = (m.username || '').trim()
+  if (username) return username.slice(0, 1).toUpperCase()
+  return '?'
+}
+
+function memberAvatarGradient(m: WorkspaceMember): string {
+  const presets = [
+    'from-indigo-500 to-sky-500',
+    'from-fuchsia-500 to-pink-500',
+    'from-emerald-500 to-teal-500',
+    'from-orange-500 to-amber-500',
+    'from-violet-500 to-purple-500',
+    'from-cyan-500 to-blue-500',
+  ] as const
+  const idx = hashString(m.userId) % presets.length
+  return presets[idx] ?? 'from-indigo-500 to-sky-500'
+}
+
+function memberAvatarUrl(m: WorkspaceMember): string | null {
+  if (m.photoUrl) return m.photoUrl
+  if (!m.username) return null
+  if (failedAvatarByMemberUserId.value[m.userId]) return null
+  return `https://t.me/i/userpic/320/${encodeURIComponent(m.username)}.jpg`
+}
+
+function onMemberAvatarError(userId: string) {
+  failedAvatarByMemberUserId.value = {
+    ...failedAvatarByMemberUserId.value,
+    [userId]: true,
+  }
+}
+
+function canRemoveWorkspaceMember(w: Workspace, m: WorkspaceMember): boolean {
+  if (user.value?.id !== w.ownerId) return false
+  if (m.userId === w.ownerId) return false
+  return true
+}
+
+async function removeWorkspaceMember(w: Workspace, m: WorkspaceMember) {
+  try {
+    await wsStore.removeMemberViaApi(w.id, m.userId)
+    clientsSyncChannel?.postMessage({
+      type: 'workspace:member_removed',
+      workspaceId: w.id,
+      removedUserId: m.userId,
+    })
+    toast.add({
+      title: t('dashboard.workspaceMemberRemovedSuccess'),
+      color: 'success',
+    })
+  } catch {
+    toast.add({
+      title: t('dashboard.workspaceMemberRemoveError'),
+      color: 'error',
+    })
+  }
+}
+
 watchDebounced(
   [inviteQuery, inviteOpen, inviteTarget],
   async () => {
     if (!inviteOpen.value || !inviteTarget.value) return
-    const q = inviteQuery.value.trim()
+    const q = inviteQuery.value.trim().replace(/^@+/, '')
     if (q.length < 1) {
       inviteHits.value = []
       return
@@ -347,6 +469,7 @@ async function sendWorkspaceInvite() {
   if (!w || !u) return
   try {
     await createInvite(w.id, u.id)
+    await wsStore.fetchMembers(w.id).catch(() => {})
     toast.add({ title: t('dashboard.workspaceInviteSuccess'), color: 'success' })
     inviteOpen.value = false
   } catch {
@@ -428,6 +551,80 @@ async function sendWorkspaceInvite() {
                       </UBadge>
                     </div>
                   </button>
+                  <div v-if="w.members === undefined" class="mb-2 text-xs text-slate-500 dark:text-slate-400">
+                    {{ $t('dashboard.workspaceMembersLoading') }}
+                  </div>
+                  <template v-else>
+                    <p class="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                      {{ $t('dashboard.workspaceMembersTitle') }}
+                    </p>
+                    <div
+                      v-if="w.members.length"
+                      class="mb-3 max-h-56 overflow-y-auto"
+                    >
+                      <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        <div
+                          v-for="m in w.members"
+                          :key="`${m.id}-${m.userId}`"
+                          class="relative rounded-xl border border-slate-200 bg-slate-50/90 px-2 pb-7 pt-6 text-center dark:border-slate-700 dark:bg-slate-900/50"
+                        >
+                          <div class="relative mx-auto mb-2 w-fit">
+                            <span
+                              class="absolute left-1/2 top-0 z-10 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-md ring-2 ring-white dark:bg-slate-900 dark:ring-slate-800"
+                            >
+                              <UIcon
+                                :name="m.userId === w.ownerId ? 'i-lucide-crown' : 'i-lucide-user'"
+                                class="size-3.5"
+                                :class="m.userId === w.ownerId ? 'text-amber-500' : 'text-slate-500 dark:text-slate-400'"
+                                :title="m.userId === w.ownerId ? $t('dashboard.workspaceRoleOwner') : $t('dashboard.workspaceRoleMember')"
+                              />
+                            </span>
+                            <img
+                              v-if="memberAvatarUrl(m)"
+                              :src="memberAvatarUrl(m) || ''"
+                              alt=""
+                              class="mx-auto h-16 w-16 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-600"
+                              @error="onMemberAvatarError(m.userId)"
+                            >
+                            <div
+                              v-else
+                              class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br text-sm font-semibold text-white ring-2 ring-slate-200 dark:ring-slate-600"
+                              :class="memberAvatarGradient(m)"
+                            >
+                              {{ memberInitials(m) }}
+                            </div>
+                          </div>
+                          <p class="line-clamp-2 min-h-[2.25rem] text-[11px] font-medium leading-tight text-slate-800 dark:text-slate-100">
+                            {{ workspaceMemberLabel(m) }}
+                          </p>
+                          <UBadge
+                            v-if="user?.id === m.userId"
+                            color="neutral"
+                            variant="subtle"
+                            size="xs"
+                            class="absolute bottom-2 left-1/2 -translate-x-1/2"
+                          >
+                            {{ $t('dashboard.workspaceYouBadge') }}
+                          </UBadge>
+                          <UButton
+                            v-if="canRemoveWorkspaceMember(w, m)"
+                            color="error"
+                            variant="ghost"
+                            size="xs"
+                            square
+                            class="absolute right-0.5 top-6 rounded-full"
+                            icon="i-lucide-user-minus"
+                            :title="$t('dashboard.workspaceMemberRemove')"
+                            :aria-label="$t('dashboard.workspaceMemberRemove')"
+                            @click="removeWorkspaceMember(w, m)"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <p v-else class="mb-3 text-xs text-slate-500 dark:text-slate-400">
+                      {{ $t('dashboard.workspaceMembersEmpty') }}
+                    </p>
+                  </template>
                   <div class="flex items-center gap-1">
                     <UButton
                       color="primary"
@@ -473,10 +670,72 @@ async function sendWorkspaceInvite() {
                       : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900',
                   ]"
                 >
-                  <button type="button" class="w-full text-left" @click="selectWorkspace(w.id)">
+                  <button type="button" class="mb-2 w-full text-left" @click="selectWorkspace(w.id)">
                     <p class="font-semibold text-slate-900 dark:text-white">{{ w.name }}</p>
                     <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ tf('dashboard.workspaceRoleMember', 'Member') }}</p>
                   </button>
+                  <div v-if="w.members === undefined" class="mb-2 text-xs text-slate-500 dark:text-slate-400">
+                    {{ $t('dashboard.workspaceMembersLoading') }}
+                  </div>
+                  <template v-else>
+                    <p class="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                      {{ $t('dashboard.workspaceMembersTitle') }}
+                    </p>
+                    <div
+                      v-if="w.members.length"
+                      class="max-h-56 overflow-y-auto"
+                    >
+                      <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        <div
+                          v-for="m in w.members"
+                          :key="`${m.id}-${m.userId}`"
+                          class="relative rounded-xl border border-slate-200 bg-slate-50/90 px-2 pb-7 pt-6 text-center dark:border-slate-700 dark:bg-slate-900/50"
+                        >
+                          <div class="relative mx-auto mb-2 w-fit">
+                            <span
+                              class="absolute left-1/2 top-0 z-10 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-md ring-2 ring-white dark:bg-slate-900 dark:ring-slate-800"
+                            >
+                              <UIcon
+                                :name="m.userId === w.ownerId ? 'i-lucide-crown' : 'i-lucide-user'"
+                                class="size-3.5"
+                                :class="m.userId === w.ownerId ? 'text-amber-500' : 'text-slate-500 dark:text-slate-400'"
+                                :title="m.userId === w.ownerId ? $t('dashboard.workspaceRoleOwner') : $t('dashboard.workspaceRoleMember')"
+                              />
+                            </span>
+                            <img
+                              v-if="memberAvatarUrl(m)"
+                              :src="memberAvatarUrl(m) || ''"
+                              alt=""
+                              class="mx-auto h-16 w-16 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-600"
+                              @error="onMemberAvatarError(m.userId)"
+                            >
+                            <div
+                              v-else
+                              class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br text-sm font-semibold text-white ring-2 ring-slate-200 dark:ring-slate-600"
+                              :class="memberAvatarGradient(m)"
+                            >
+                              {{ memberInitials(m) }}
+                            </div>
+                          </div>
+                          <p class="line-clamp-2 min-h-[2.25rem] text-[11px] font-medium leading-tight text-slate-800 dark:text-slate-100">
+                            {{ workspaceMemberLabel(m) }}
+                          </p>
+                          <UBadge
+                            v-if="user?.id === m.userId"
+                            color="neutral"
+                            variant="subtle"
+                            size="xs"
+                            class="absolute bottom-2 left-1/2 -translate-x-1/2"
+                          >
+                            {{ $t('dashboard.workspaceYouBadge') }}
+                          </UBadge>
+                        </div>
+                      </div>
+                    </div>
+                    <p v-else class="text-xs text-slate-500 dark:text-slate-400">
+                      {{ $t('dashboard.workspaceMembersEmpty') }}
+                    </p>
+                  </template>
                 </li>
               </ul>
             </div>
@@ -641,7 +900,7 @@ async function sendWorkspaceInvite() {
             <p v-if="inviteLoading" class="text-xs text-slate-500">
               …
             </p>
-            <p v-else-if="inviteQuery.trim().length > 0 && !inviteHits.length" class="text-xs text-slate-500">
+            <p v-else-if="inviteQueryNormalized.length > 0 && !inviteHits.length" class="text-xs text-slate-500">
               {{ $t('dashboard.workspaceInviteNoResults') }}
             </p>
             <ul

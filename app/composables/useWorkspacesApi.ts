@@ -1,3 +1,12 @@
+export interface WorkspaceMember {
+  id: string
+  userId: string
+  username: string | null
+  firstName: string | null
+  lastName: string | null
+  photoUrl: string | null
+}
+
 export interface Workspace {
   id: string
   name: string
@@ -5,6 +14,7 @@ export interface Workspace {
   ownerName: string | null
   createdAt: string
   updatedAt: string
+  members?: WorkspaceMember[]
 }
 
 export function useWorkspacesApi() {
@@ -38,5 +48,21 @@ export function useWorkspacesApi() {
     })
   }
 
-  return { listMy, create, update, remove }
+  async function listMembers(workspaceId: string): Promise<WorkspaceMember[]> {
+    return apiFetch<WorkspaceMember[]>(
+      getApiUrl(`/workspace/${encodeURIComponent(workspaceId)}/members`),
+      { method: 'GET', headers },
+    )
+  }
+
+  async function removeMember(workspaceId: string, userId: string): Promise<void> {
+    await apiFetch(
+      getApiUrl(
+        `/workspace/${encodeURIComponent(workspaceId)}/members/${encodeURIComponent(userId)}`,
+      ),
+      { method: 'DELETE', headers },
+    )
+  }
+
+  return { listMy, create, update, remove, listMembers, removeMember }
 }

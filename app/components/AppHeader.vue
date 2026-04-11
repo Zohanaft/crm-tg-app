@@ -97,9 +97,12 @@ function markNotificationRead(actionId: string) {
 
 async function onAcceptInvite(inviteId: string) {
   try {
-    await acceptInviteRequest(inviteId)
+    const result = await acceptInviteRequest(inviteId)
     toast.add({ title: t('notifications.inviteAccepted'), color: 'success' })
     await wsStore.fetchMy().catch(() => {})
+    if (result?.workspaceId) {
+      await wsStore.fetchMembers(result.workspaceId).catch(() => {})
+    }
     await refreshNotifications()
   } catch {
     toast.add({ title: t('dashboard.workspaceInviteError'), color: 'error' })

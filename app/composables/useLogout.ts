@@ -1,5 +1,4 @@
 import { useUserStore } from '~/stores/user'
-import { apiFetch, getApiUrl } from '~/composables/useApiFetch'
 
 async function performLogout(options?: { redirect?: boolean }) {
   const userStore = useUserStore()
@@ -9,6 +8,7 @@ async function performLogout(options?: { redirect?: boolean }) {
   botsStore.clearBots()
   wsStore.clear()
   try {
+    const { apiFetch, getApiUrl } = await import('~/composables/useApiFetch')
     await apiFetch(getApiUrl('/logout'), { method: 'POST', public: true })
   } catch {
     // Ignore - cookies may already be cleared

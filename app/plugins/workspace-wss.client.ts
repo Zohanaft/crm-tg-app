@@ -1,9 +1,57 @@
 import { storeToRefs } from 'pinia'
 
-export default defineNuxtPlugin(() => {
+function applyMemberJoinedFromPayload(
+  wsStore: ReturnType<typeof useWorkspacesStore>,
+  payload: Record<string, unknown>,
+) {
+  const workspaceId = typeof payload.workspaceId === 'string' ? payload.workspaceId : ''
+  const memberRaw = payload.member as Record<string, unknown> | undefined
+  if (!workspaceId || !memberRaw || typeof memberRaw.userId !== 'string') return
+  wsStore.upsertMember(workspaceId, {
+    userId: memberRaw.userId,
+    username:
+      memberRaw.username === null || memberRaw.username === undefined
+        ? null
+        : String(memberRaw.username),
+    firstName:
+      memberRaw.firstName === null || memberRaw.firstName === undefined
+        ? null
+        : String(memberRaw.firstName),
+    lastName:
+      memberRaw.lastName === null || memberRaw.lastName === undefined
+        ? null
+        : String(memberRaw.lastName),
+    photoUrl:
+      memberRaw.photoUrl === null || memberRaw.photoUrl === undefined
+        ? null
+        : String(memberRaw.photoUrl),
+  })
+}
+
+function translateRemovedMemberTitle(nuxtApp: ReturnType<typeof useNuxtApp>): string {
+  const withI18n = nuxtApp as typeof nuxtApp & {
+    $i18n?: { t: (key: string) => string }
+  }
+  const fromModule = withI18n.$i18n?.t?.('dashboard.workspaceRemovedAsMember')
+  if (typeof fromModule === 'string' && fromModule.trim()) return fromModule
+
+  const gp = nuxtApp.vueApp.config.globalProperties as {
+    $t?: (key: string) => string
+  }
+  const fromGp = gp.$t?.('dashboard.workspaceRemovedAsMember')
+  if (typeof fromGp === 'string' && fromGp.trim()) return fromGp
+
+  return 'You were removed from a workspace'
+}
+
+export default defineNuxtPlugin((nuxtApp) => {
   const userStore = useUserStore()
   const { loggedIn } = storeToRefs(userStore)
   const actionsStore = useActionsStore()
+  const wsStore = useWorkspacesStore()
+  const toast = useToast()
+  let lastRemovedSelfToastKey = ''
+  let lastRemovedSelfToastAt = 0
   const globalWorkspaceRef = ref<string | null>(null)
   const channelName = 'tg-crm-wss-sync-v1'
   const leaderKey = 'tg-crm-wss-leader-v1'
@@ -105,10 +153,31 @@ export default defineNuxtPlugin(() => {
       })
     },
     onClientDeleted(clientId, workspaceIds) {
+      actionsStore.removeNewClientActionsForClientId(clientId)
       bc?.postMessage({
         type: 'client:deleted',
         clientId,
         workspaceIds,
+      })
+    },
+    onMemberJoined(payload: Record<string, unknown>) {
+      applyMemberJoinedFromPayload(wsStore, payload)
+      const workspaceId =
+        typeof payload.workspaceId === 'string' ? payload.workspaceId : ''
+      const member = payload.member as Record<string, unknown> | undefined
+      if (workspaceId && member) {
+        bc?.postMessage({
+          type: 'workspace:member_joined',
+          workspaceId,
+          member,
+        })
+      }
+    },
+    onMemberRemoved({ workspaceId, removedUserId }) {
+      bc?.postMessage({
+        type: 'workspace:member_removed',
+        workspaceId,
+        removedUserId,
       })
     },
   })
@@ -117,7 +186,17 @@ export default defineNuxtPlugin(() => {
     const msg = event.data as
       | { type: 'action:created'; action: unknown }
       | { type: 'client:start'; client: unknown; workspaceIds: unknown }
-      | { type: 'client:deleted'; clientId: unknown; workspaceIds: unknown }
+      | { type: 'client:deleted'; clientId?: unknown; workspaceIds?: unknown }
+      | {
+          type: 'workspace:member_joined'
+          workspaceId?: unknown
+          member?: Record<string, unknown>
+        }
+      | {
+          type: 'workspace:member_removed'
+          workspaceId?: unknown
+          removedUserId?: unknown
+        }
       | undefined
     if (!msg || typeof msg !== 'object') return
     if (msg.type === 'action:created') {
@@ -125,6 +204,53 @@ export default defineNuxtPlugin(() => {
       if (action?.id) {
         actionsStore.prependAction(action)
       }
+      return
+    }
+    if (msg.type === 'client:deleted') {
+      const clientId = typeof msg.clientId === 'string' ? msg.clientId : ''
+      if (clientId) {
+        actionsStore.removeNewClientActionsForClientId(clientId)
+      }
+      return
+    }
+    if (msg.type === 'workspace:member_joined') {
+      const workspaceId =
+        typeof msg.workspaceId === 'string' ? msg.workspaceId : ''
+      if (!workspaceId || !msg.member) return
+      applyMemberJoinedFromPayload(wsStore, {
+        workspaceId,
+        member: msg.member,
+      })
+      return
+    }
+    if (msg.type === 'workspace:member_removed') {
+      const workspaceId =
+        typeof msg.workspaceId === 'string' ? msg.workspaceId : ''
+      const removedUserId =
+        typeof msg.removedUserId === 'string' ? msg.removedUserId : ''
+      if (!workspaceId || !removedUserId) return
+      void (async () => {
+        const { wasSelf } = await wsStore.handleMemberRemovedEvent(
+          workspaceId,
+          removedUserId,
+          userStore.user?.id,
+        )
+        if (wasSelf) {
+          const dedupKey = `${workspaceId}:${removedUserId}`
+          const now = Date.now()
+          if (
+            dedupKey !== lastRemovedSelfToastKey
+            || now - lastRemovedSelfToastAt > 2500
+          ) {
+            lastRemovedSelfToastKey = dedupKey
+            lastRemovedSelfToastAt = now
+            toast.add({
+              title: translateRemovedMemberTitle(nuxtApp),
+              color: 'warning',
+            })
+          }
+        }
+      })()
     }
   })
 })

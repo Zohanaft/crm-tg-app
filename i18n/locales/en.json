@@ -51,7 +51,15 @@
     "workspaceInviteSend": "Send invite",
     "workspaceInviteNoResults": "No users found",
     "workspaceInviteSuccess": "Invitation sent",
-    "workspaceInviteError": "Could not send invitation"
+    "workspaceInviteError": "Could not send invitation",
+    "workspaceMembersTitle": "Members",
+    "workspaceMembersLoading": "Loading members…",
+    "workspaceMembersEmpty": "No members yet",
+    "workspaceYouBadge": "You",
+    "workspaceMemberRemove": "Remove member",
+    "workspaceMemberRemovedSuccess": "Member removed from workspace",
+    "workspaceMemberRemoveError": "Could not remove member",
+    "workspaceRemovedAsMember": "You were removed from a workspace"
   },
   "notifications": {
     "title": "Notifications",

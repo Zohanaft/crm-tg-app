@@ -25,6 +25,13 @@ type MemberJoinedMessage = {
   payload?: Record<string, unknown>
 }
 
+/** WSS server should map internal workspace-member-removed to this shape (payload or top-level fields). */
+type MemberRemovedMessage = {
+  type: 'workspace:member_removed'
+  ts?: string
+  payload?: { workspaceId?: string; removedUserId?: string }
+}
+
 type ClientDeletedMessage = {
   type: 'client:deleted'
   ts?: string
@@ -45,6 +52,10 @@ export function useWorkspaceWss(
     onClientDeleted?: (clientId: string, workspaceIds: string[]) => void
     onActionCreated?: (action: FeedAction) => void
     onMemberJoined?: (payload: Record<string, unknown>) => void
+    onMemberRemoved?: (payload: {
+      workspaceId: string
+      removedUserId: string
+    }) => void
   },
 ) {
   const { public: runtimePublic } = useRuntimeConfig()
@@ -77,6 +88,7 @@ export function useWorkspaceWss(
         | ClientStartMessage
         | ActionCreatedMessage
         | MemberJoinedMessage
+        | MemberRemovedMessage
         | ClientDeletedMessage
         | { type?: string }
       try {
@@ -131,6 +143,20 @@ export function useWorkspaceWss(
       if (msg.type === 'workspace:member_joined') {
         const m = msg as MemberJoinedMessage
         opts.onMemberJoined?.(m.payload ?? {})
+        return
+      }
+
+      if (msg.type === 'workspace:member_removed') {
+        const m = msg as MemberRemovedMessage & Record<string, unknown>
+        const payload =
+          (m.payload as Record<string, unknown> | undefined) ?? m
+        const workspaceId =
+          typeof payload.workspaceId === 'string' ? payload.workspaceId : ''
+        const removedUserId =
+          typeof payload.removedUserId === 'string' ? payload.removedUserId : ''
+        if (workspaceId && removedUserId) {
+          opts.onMemberRemoved?.({ workspaceId, removedUserId })
+        }
         return
       }
     },

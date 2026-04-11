@@ -76,6 +76,17 @@ export const useActionsStore = defineStore('actions', {
       this.items = [action, ...this.items].slice(0, 100)
     },
 
+    /** Drop stale NEW_CLIENT rows so a later WSS action:created is not skipped by prependAction dedup. */
+    removeNewClientActionsForClientId(clientId: string) {
+      if (!clientId) return
+      this.items = this.items.filter((a) => {
+        if (a.type !== 'NEW_CLIENT') return true
+        const m = a.meta as { client?: { id?: string | null } } | null | undefined
+        const id = m?.client?.id
+        return id !== clientId
+      })
+    },
+
     async fetchAll() {
       const { list } = useActionsApi()
       this.pending = true

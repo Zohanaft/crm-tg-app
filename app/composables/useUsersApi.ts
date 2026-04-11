@@ -11,7 +11,8 @@ export function useUsersApi() {
   const headers = import.meta.server ? getRequestHeaders() : undefined
 
   async function search(workspaceId: string, q: string): Promise<UserSearchItem[]> {
-    const qs = new URLSearchParams({ workspaceId, q })
+    const normalized = q.trim().replace(/^@+/, '')
+    const qs = new URLSearchParams({ workspaceId, q: normalized })
     return apiFetch<UserSearchItem[]>(
       getApiUrl(`/users/search?${qs.toString()}`),
       { method: 'GET', headers },

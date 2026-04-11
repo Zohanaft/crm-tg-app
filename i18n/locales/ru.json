@@ -51,7 +51,15 @@
     "workspaceInviteSend": "Отправить приглашение",
     "workspaceInviteNoResults": "Пользователи не найдены",
     "workspaceInviteSuccess": "Приглашение отправлено",
-    "workspaceInviteError": "Не удалось отправить приглашение"
+    "workspaceInviteError": "Не удалось отправить приглашение",
+    "workspaceMembersTitle": "Участники",
+    "workspaceMembersLoading": "Загрузка участников…",
+    "workspaceMembersEmpty": "Пока нет участников",
+    "workspaceYouBadge": "Вы",
+    "workspaceMemberRemove": "Исключить участника",
+    "workspaceMemberRemovedSuccess": "Участник исключён из пространства",
+    "workspaceMemberRemoveError": "Не удалось исключить участника",
+    "workspaceRemovedAsMember": "Вас исключили из рабочего пространства"
   },
   "notifications": {
     "title": "Уведомления",

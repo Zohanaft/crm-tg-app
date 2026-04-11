@@ -31,7 +31,8 @@ export default defineNuxtConfig({
       allowedHosts: ['devtbookflow.nl.tuna.am'],
     },
     optimizeDeps: {
-      include: ['@nuxt/ui'],
+      // Fewer parallel /@fs/reka-ui/dist/* requests through tuna/nginx (502 under HTTP/2 burst).
+      include: ['@nuxt/ui', 'reka-ui'],
     },
   },
   css: [
