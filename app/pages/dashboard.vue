@@ -572,7 +572,7 @@ async function sendWorkspaceInvite() {
                             <span
                               class="absolute flex left-0 right-0 top-0 z-10"
                             >
-                              <span class="absolute cursor-pointer flex justify-center items-center h-5 w-5 top-1/4 rounded-full bg-white shadow-md ring-2 ring-white dark:bg-slate-900 dark:ring-slate-800">
+                              <span class="absolute flex justify-center items-center h-5 w-5 top-1/4 rounded-full bg-white shadow-md ring-2 ring-white dark:bg-slate-900 dark:ring-slate-800">
                                 <UIcon
                                   :name="m.userId === w.ownerId ? 'i-lucide-crown' : 'i-lucide-user'"
                                   size="xs"
