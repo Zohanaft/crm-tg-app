@@ -41,6 +41,7 @@ const userMenuItems = computed(() => [
       label: t('nav.logout'),
       onClick: () => logout(),
       color: 'error' as const,
+      class: 'cursor-pointer',
     },
   ],
 ])
@@ -148,8 +149,9 @@ function formatNotifyTime(iso: string) {
       </nav>
 
       <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
-        <UColorModeButton class="rounded-full" />
+        <UColorModeButton class="cursor-pointer rounded-full" />
         <UDropdownMenu
+          class="cursor-pointer"
           :items="[
             localeOptions.map((opt) => ({
               label: opt.label,
@@ -168,7 +170,7 @@ function formatNotifyTime(iso: string) {
               variant="ghost"
               color="neutral"
               size="md"
-              class="relative rounded-full"
+              class="relative rounded-full cursor-pointer"
               :aria-label="$t('nav.notifications')"
               icon="i-lucide-bell"
               @click="toggleNotifPanel"
@@ -201,7 +203,7 @@ function formatNotifyTime(iso: string) {
                       <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
                         {{ inv.invitedBy.firstName ?? inv.invitedBy.username ?? 'User' }}
                       </p>
-                      <UButton size="xs" color="primary" class="mt-2 rounded-full" @click="onAcceptInvite(inv.id)">
+                      <UButton size="xs" color="primary" class="mt-2 rounded-full cursor-pointer" @click="onAcceptInvite(inv.id)">
                         {{ $t('notifications.acceptInvite') }}
                       </UButton>
                     </li>
@@ -231,7 +233,7 @@ function formatNotifyTime(iso: string) {
                         size="xs"
                         color="neutral"
                         variant="outline"
-                        class="rounded-full"
+                        class="rounded-full cursor-pointer"
                         @click="markNotificationRead(a.id)"
                       >
                         {{ $t('notifications.markRead') }}
@@ -243,7 +245,7 @@ function formatNotifyTime(iso: string) {
             </div>
           </div>
           <UDropdownMenu :items="userMenuItems">
-            <UButton variant="ghost" size="md" color="neutral" class="gap-2 rounded-full">
+            <UButton variant="ghost" size="md" color="neutral" class="gap-2 rounded-full cursor-pointer">
               <UAvatar
                 v-if="userStore.user?.photoUrl"
                 :src="userStore.user.photoUrl"
