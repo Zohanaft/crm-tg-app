@@ -55,6 +55,18 @@ export default defineNuxtConfig({
     },
   },
   modules: ['@nuxt/ui', '@pinia/nuxt', '@nuxtjs/i18n', '@vueuse/nuxt'],
+  icon: {
+    /**
+     * `server` тянет коллекции через require(@iconify-json/*) в Nitro — в Docker том
+     * `crm-tg-app-node-modules` часто без lucide → MODULE_NOT_FOUND на `/_nuxt_icon/...`.
+     * `iconify` — загрузка с api.iconify.design (клиент/SSR по HTTP), локальный JSON не нужен.
+     */
+    provider: 'iconify',
+    /**
+     * Если снова включишь provider `server`, не оставляй дефолт `/api/_nuxt_icon` за nginx на Nest.
+     */
+    localApiEndpoint: '/_nuxt_icon',
+  },
   i18n: {
     locales: [
       {
