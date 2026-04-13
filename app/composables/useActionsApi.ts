@@ -10,12 +10,30 @@ export interface FeedAction {
   createdAt: string
 }
 
+/** Без полей — личная лента; workspaceIds / workspaceId — режим истории workspace на бэкенде */
+export type ActionsListOpts = {
+  workspaceId?: string | null
+  workspaceIds?: string[] | null
+}
+
 export function useActionsApi() {
   const { apiFetch, getApiUrl, getRequestHeaders } = useApiFetch()
   const headers = import.meta.server ? getRequestHeaders() : undefined
 
-  async function list(workspaceId?: string | null): Promise<FeedAction[]> {
-    const qs = workspaceId ? `?workspaceId=${encodeURIComponent(workspaceId)}` : ''
+  function buildActionsQuery(opts?: ActionsListOpts): string {
+    const params = new URLSearchParams()
+    const wid = opts?.workspaceId?.trim()
+    if (wid) params.set('workspaceId', wid)
+    for (const raw of opts?.workspaceIds ?? []) {
+      const id = raw?.trim()
+      if (id) params.append('workspaceIds', id)
+    }
+    const s = params.toString()
+    return s ? `?${s}` : ''
+  }
+
+  async function list(opts?: ActionsListOpts): Promise<FeedAction[]> {
+    const qs = buildActionsQuery(opts)
     return apiFetch<FeedAction[]>(getApiUrl(`/actions${qs}`), { method: 'GET', headers })
   }
 

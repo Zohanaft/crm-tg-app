@@ -1,4 +1,4 @@
-import type { FeedAction } from '~/composables/useActionsApi'
+import type { ActionsListOpts, FeedAction } from '~/composables/useActionsApi'
 
 function actionKey(a: FeedAction): string {
   return `${a.id}`
@@ -87,12 +87,13 @@ export const useActionsStore = defineStore('actions', {
       })
     },
 
-    async fetchAll() {
+    /** Без опций — личная лента; передайте workspaceIds для истории workspace */
+    async fetchAll(opts?: ActionsListOpts) {
       const { list } = useActionsApi()
       this.pending = true
       this.error = null
       try {
-        this.items = this.dedupeActions(await list())
+        this.items = this.dedupeActions(await list(opts))
       } catch (e) {
         this.error = e instanceof Error ? e.message : String(e)
       } finally {
