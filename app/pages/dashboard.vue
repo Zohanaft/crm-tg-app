@@ -572,7 +572,7 @@ async function sendWorkspaceInvite() {
                             <span
                               class="absolute flex left-0 right-0 top-0 z-10"
                             >
-                              <span class="absolute flex justify-center items-center h-5 w-5 top-1/4 rounded-full bg-white shadow-md ring-2 ring-white dark:bg-slate-900 dark:ring-slate-800">
+                              <span class="absolute flex justify-center items-center h-5 w-5 top-1/4 -left-1/6 rounded-full bg-white shadow-md ring-2 ring-white dark:bg-slate-900 dark:ring-slate-800">
                                 <UIcon
                                   :name="m.userId === w.ownerId ? 'i-lucide-crown' : 'i-lucide-user'"
                                   size="xs"
@@ -584,7 +584,7 @@ async function sendWorkspaceInvite() {
                                 v-if="canRemoveWorkspaceMember(w, m)"
                                 color="error"
                                 size="xs"
-                                class="absolute right-0 top-1/4 rounded-full cursor-pointer"
+                                class="absolute -right-1/6 top-1/4 rounded-full cursor-pointer"
                                 icon="i-lucide-user-minus"
                                 :title="$t('dashboard.workspaceMemberRemove')"
                                 :aria-label="$t('dashboard.workspaceMemberRemove')"
