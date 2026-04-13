@@ -124,7 +124,12 @@ function formatNotifyTime(iso: string) {
   >
     <div class="mx-auto flex h-14 max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6">
       <NuxtLink to="/" class="flex shrink-0 items-center">
-        <img src="/images/logo.svg" alt="Logo" class="h-[2rem] w-auto" />
+        <img src="/images/logo.svg" alt="Logo" class="h-[2rem] w-auto dark:hidden" />
+        <img
+          src="/images/logo-light.svg"
+          alt="Logo"
+          class="hidden h-[2rem] w-auto dark:block"
+        />
       </NuxtLink>
 
       <nav class="hidden items-center gap-1 sm:flex">
