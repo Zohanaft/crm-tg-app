@@ -570,13 +570,25 @@ async function sendWorkspaceInvite() {
                         >
                           <div class="relative mx-auto mb-2 w-fit">
                             <span
-                              class="absolute left-1/2 top-0 z-10 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-md ring-2 ring-white dark:bg-slate-900 dark:ring-slate-800"
+                              class="absolute flex left-0 right-0 top-0 z-10"
                             >
-                              <UIcon
-                                :name="m.userId === w.ownerId ? 'i-lucide-crown' : 'i-lucide-user'"
-                                class="size-3.5"
-                                :class="m.userId === w.ownerId ? 'text-amber-500' : 'text-slate-500 dark:text-slate-400'"
-                                :title="m.userId === w.ownerId ? $t('dashboard.workspaceRoleOwner') : $t('dashboard.workspaceRoleMember')"
+                              <span class="absolute cursor-pointer flex justify-center items-center h-5 w-5 top-1/4 rounded-full bg-white shadow-md ring-2 ring-white dark:bg-slate-900 dark:ring-slate-800">
+                                <UIcon
+                                  :name="m.userId === w.ownerId ? 'i-lucide-crown' : 'i-lucide-user'"
+                                  size="xs"
+                                  :class="m.userId === w.ownerId ? 'text-amber-500' : 'text-slate-500 dark:text-slate-400'"
+                                  :title="m.userId === w.ownerId ? $t('dashboard.workspaceRoleOwner') : $t('dashboard.workspaceRoleMember')"
+                                />
+                              </span>
+                              <UButton
+                                v-if="canRemoveWorkspaceMember(w, m)"
+                                color="error"
+                                size="xs"
+                                class="absolute right-0 top-1/4 rounded-full cursor-pointer"
+                                icon="i-lucide-user-minus"
+                                :title="$t('dashboard.workspaceMemberRemove')"
+                                :aria-label="$t('dashboard.workspaceMemberRemove')"
+                                @click="removeWorkspaceMember(w, m)"
                               />
                             </span>
                             <img
@@ -606,18 +618,7 @@ async function sendWorkspaceInvite() {
                           >
                             {{ $t('dashboard.workspaceYouBadge') }}
                           </UBadge>
-                          <UButton
-                            v-if="canRemoveWorkspaceMember(w, m)"
-                            color="error"
-                            variant="ghost"
-                            size="xs"
-                            square
-                            class="absolute right-0.5 top-6 rounded-full"
-                            icon="i-lucide-user-minus"
-                            :title="$t('dashboard.workspaceMemberRemove')"
-                            :aria-label="$t('dashboard.workspaceMemberRemove')"
-                            @click="removeWorkspaceMember(w, m)"
-                          />
+                          
                         </div>
                       </div>
                     </div>
