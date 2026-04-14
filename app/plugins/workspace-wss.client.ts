@@ -1,3 +1,4 @@
+import type { NuxtApp } from '#app'
 import { storeToRefs } from 'pinia'
 
 function applyMemberJoinedFromPayload(
@@ -48,7 +49,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   const userStore = useUserStore()
   const { loggedIn } = storeToRefs(userStore)
   const actionsStore = useActionsStore()
-  const wsStore = useWorkspacesStore()
+  const workspacesStore = useWorkspacesStore()
   const toast = useToast()
   let lastRemovedSelfToastKey = ''
   let lastRemovedSelfToastAt = 0
@@ -161,7 +162,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       })
     },
     onMemberJoined(payload: Record<string, unknown>) {
-      applyMemberJoinedFromPayload(wsStore, payload)
+      applyMemberJoinedFromPayload(workspacesStore, payload)
       const workspaceId =
         typeof payload.workspaceId === 'string' ? payload.workspaceId : ''
       const member = payload.member as Record<string, unknown> | undefined
@@ -174,6 +175,8 @@ export default defineNuxtPlugin((nuxtApp) => {
       }
     },
     onMemberRemoved({ workspaceId, removedUserId }) {
+      const wasSelf = removedUserId === userStore.user?.id
+      if (wasSelf) workspacesStore.removeWorkspaceFromStore(workspaceId)
       bc?.postMessage({
         type: 'workspace:member_removed',
         workspaceId,
@@ -183,6 +186,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   })
 
   bc?.addEventListener('message', (event: MessageEvent) => {
+    console.log('message', event)
     const msg = event.data as
       | { type: 'action:created'; action: unknown }
       | { type: 'client:start'; client: unknown; workspaceIds: unknown }
@@ -217,7 +221,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       const workspaceId =
         typeof msg.workspaceId === 'string' ? msg.workspaceId : ''
       if (!workspaceId || !msg.member) return
-      applyMemberJoinedFromPayload(wsStore, {
+      applyMemberJoinedFromPayload(workspacesStore, {
         workspaceId,
         member: msg.member,
       })
@@ -230,11 +234,12 @@ export default defineNuxtPlugin((nuxtApp) => {
         typeof msg.removedUserId === 'string' ? msg.removedUserId : ''
       if (!workspaceId || !removedUserId) return
       void (async () => {
-        const { wasSelf } = await wsStore.handleMemberRemovedEvent(
+        const { wasSelf } = await workspacesStore.handleMemberRemovedEvent(
           workspaceId,
           removedUserId,
           userStore.user?.id,
         )
+        
         if (wasSelf) {
           void actionsStore.fetchAll()
           const dedupKey = `${workspaceId}:${removedUserId}`
@@ -246,7 +251,7 @@ export default defineNuxtPlugin((nuxtApp) => {
             lastRemovedSelfToastKey = dedupKey
             lastRemovedSelfToastAt = now
             toast.add({
-              title: translateRemovedMemberTitle(nuxtApp),
+              title: translateRemovedMemberTitle(nuxtApp as NuxtApp),
               color: 'warning',
             })
           }

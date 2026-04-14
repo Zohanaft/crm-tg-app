@@ -99,6 +99,9 @@ export const useWorkspacesStore = defineStore('workspaces', {
       next[idx] = { ...w, members }
       this.items = next
     },
+    removeWorkspaceFromStore(workspaceId: string) {
+      this.items = this.items.filter((w) => w.id !== workspaceId)
+    },
     async handleMemberRemovedEvent(
       workspaceId: string,
       removedUserId: string,
@@ -106,9 +109,11 @@ export const useWorkspacesStore = defineStore('workspaces', {
     ): Promise<{ wasSelf: boolean }> {
       const wasSelf =
         Boolean(currentUserId) && removedUserId === currentUserId
-      this.removeMemberFromWorkspace(workspaceId, removedUserId)
       if (wasSelf) {
+        this.removeWorkspaceFromStore(workspaceId)
         await this.fetchMy().catch(() => {})
+      } else {
+        this.removeMemberFromWorkspace(workspaceId, removedUserId)
       }
       return { wasSelf }
     },
