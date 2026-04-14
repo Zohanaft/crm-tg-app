@@ -79,7 +79,7 @@ async function onSubmit(_event: FormSubmitEvent<ConnectBotFormState>) {
           type="submit"
           color="primary"
           block
-          class="rounded-full"
+          class="rounded-full cursor-pointer"
           :loading="loading"
           :disabled="loading"
         >

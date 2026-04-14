@@ -10,9 +10,8 @@ export interface FeedAction {
   createdAt: string
 }
 
-/** Без полей — личная лента; workspaceIds / workspaceId — режим истории workspace на бэкенде */
+/** Без полей — личная лента; workspaceIds — режим истории workspace на бэкенде */
 export type ActionsListOpts = {
-  workspaceId?: string | null
   workspaceIds?: string[] | null
 }
 
@@ -22,8 +21,6 @@ export function useActionsApi() {
 
   function buildActionsQuery(opts?: ActionsListOpts): string {
     const params = new URLSearchParams()
-    const wid = opts?.workspaceId?.trim()
-    if (wid) params.set('workspaceId', wid)
     for (const raw of opts?.workspaceIds ?? []) {
       const id = raw?.trim()
       if (id) params.append('workspaceIds', id)

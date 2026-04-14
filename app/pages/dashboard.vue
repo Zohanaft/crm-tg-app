@@ -493,7 +493,7 @@ async function sendWorkspaceInvite() {
           to="/connect-bot"
           color="primary"
           variant="solid"
-          class="rounded-full"
+          class="rounded-full cursor-pointer"
           :label="$t('dashboard.connectBot')"
         />
       </div>
@@ -511,7 +511,7 @@ async function sendWorkspaceInvite() {
                 {{ $t('dashboard.workspacesOwnerHint') }}
               </p>
             </div>
-            <UButton color="primary" variant="outline" size="sm" class="rounded-full" @click="openCreate">
+            <UButton color="primary" variant="outline" size="sm" class="rounded-full cursor-pointer" @click="openCreate">
               {{ $t('dashboard.createWorkspace') }}
             </UButton>
           </div>
@@ -979,10 +979,10 @@ async function sendWorkspaceInvite() {
           <div class="space-y-4">
             <UInput v-model="createName" :placeholder="$t('dashboard.workspaceName')" class="w-full" />
             <div class="flex justify-end gap-2">
-              <UButton color="neutral" variant="ghost" class="rounded-full" @click="createOpen = false">
+              <UButton color="neutral" variant="ghost" class="rounded-full cursor-pointer" @click="createOpen = false">
                 {{ $t('dashboard.workspaceCancel') }}
               </UButton>
-              <UButton color="primary" class="rounded-full" @click="saveCreate">
+              <UButton color="primary" class="rounded-full cursor-pointer" @click="saveCreate">
                 {{ $t('dashboard.workspaceCreate') }}
               </UButton>
             </div>
