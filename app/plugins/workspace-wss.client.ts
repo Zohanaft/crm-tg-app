@@ -236,6 +236,7 @@ export default defineNuxtPlugin((nuxtApp) => {
           userStore.user?.id,
         )
         if (wasSelf) {
+          void actionsStore.fetchAll()
           const dedupKey = `${workspaceId}:${removedUserId}`
           const now = Date.now()
           if (

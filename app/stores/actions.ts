@@ -13,6 +13,8 @@ export function formatActionTypeLabel(type: string): string {
       return 'Новый участник'
     case 'WORKSPACE_INVITE':
       return 'Приглашение'
+    case 'WORKSPACE_MEMBER_REMOVED':
+      return 'Исключение из workspace'
     default:
       return type
   }
