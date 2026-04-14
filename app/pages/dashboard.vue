@@ -632,13 +632,13 @@ async function sendWorkspaceInvite() {
                       variant="soft"
                       size="sm"
                       square
-                      class="rounded-full"
+                      class="rounded-full cursor-pointer"
                       icon="i-lucide-plus"
                       :title="$t('dashboard.workspaceInvite')"
                       :aria-label="$t('dashboard.workspaceInvite')"
                       @click="openInvite(w)"
                     />
-                    <UButton color="neutral" variant="ghost" size="sm" class="rounded-full" @click="openRename(w)">
+                    <UButton color="neutral" variant="ghost" size="sm" class="rounded-full cursor-pointer" @click="openRename(w)">
                       {{ $t('dashboard.workspaceRename') }}
                     </UButton>
                     <UButton
@@ -646,7 +646,7 @@ async function sendWorkspaceInvite() {
                       variant="ghost"
                       size="sm"
                       square
-                      class="rounded-full"
+                      class="rounded-full cursor-pointer"
                       icon="i-lucide-trash-2"
                       :title="$t('dashboard.workspaceDelete')"
                       :aria-label="$t('dashboard.workspaceDelete')"

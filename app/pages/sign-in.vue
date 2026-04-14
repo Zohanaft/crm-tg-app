@@ -116,7 +116,7 @@ const loginViaTelegram = () => {
           variant="outline"
           size="xl"
           square
-          class="rounded-full"
+          class="rounded-full cursor-pointer"
           icon="i-mdi-telegram"
           :title="$t('signIn.telegram')"
           :aria-label="$t('signIn.telegram')"
