@@ -1,5 +1,8 @@
 <script setup lang="ts">
-const links = computed(() => [{ to: '/dashboard', label: 'dashboard.title' }])
+const links = computed(() => [
+  { to: '/dashboard', label: 'dashboard.title' },
+  { to: '/product-cards', label: 'productCards.navTitle' },
+])
 </script>
 
 <template>

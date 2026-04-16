@@ -10,6 +10,15 @@ export default defineNuxtConfig({
     apiBase: process.env.NUXT_API_BASE || '',
     /** Path prefix when apiBase is the same origin (e.g. '/api'). Set to '/api' for https://devtbookflow.nl.tuna.am so nginx can proxy. Leave empty when apiBase is direct backend URL. */
     apiPathPrefix: process.env.NUXT_API_PATH_PREFIX || '',
+    /**
+     * Storage config for @aws-sdk/client-s3 service (server-only).
+     * Primary env keys are S3_BUCKET_* from compose.env; NUXT_YC_* are fallback for old environments.
+     */
+    s3BucketEndpoint: process.env.S3_BUCKET_ENDPOINT || process.env.NUXT_YC_S3_ENDPOINT || 's3.ru-7.storage.selcloud.ru',
+    s3BucketAccessKeyId: process.env.S3_BUCKET_PUBLIC || process.env.NUXT_YC_ACCESS_KEY_ID || '',
+    s3BucketSecretAccessKey: process.env.S3_BUCKET_SECRET || process.env.NUXT_YC_SECRET_ACCESS_KEY || '',
+    s3BucketRegion: process.env.S3_BUCKET_REGION || process.env.NUXT_YC_S3_REGION || 'ru-7',
+    s3BucketName: process.env.S3_BUCKET_NAME || process.env.NUXT_YC_BUCKET || 's3-devtbookflow',
     public: {
       apiPathPrefix: process.env.NUXT_API_PATH_PREFIX || '/api',
       wssPath: process.env.NUXT_WSS_PATH || '/api/wss',
